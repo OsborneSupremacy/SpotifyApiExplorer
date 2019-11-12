@@ -1,0 +1,110 @@
+
+<input [(ngModel)]="spotifyUserName" type="text" placeholder="Spotify Username" />
+<button (click)="findUser()">
+    Get Playlists
+</button>
+
+<p>&nbsp;</p>
+
+<h5 *ngIf="userNotFound" class="alert alert-danger" role="alert">
+    User not found!
+</h5>
+
+<div class="row">
+
+    <!--begin - playlists-->
+    <div class="col-sm-4">
+        <div class="card" *ngIf="(userPlaylists && !userNotFound)">
+            <div class="card-body">
+                <h5 class="card-title">Playlists</h5>
+
+                <table class='table table-striped' aria-labelledby="tableLabel">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Tracks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let playlist of userPlaylists.items">
+                            <td>{{ playlist.name }}</td>
+                            <td>{{ playlist.tracks.length }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div *ngIf="userPlaylists.length === 0">
+                    No playlists found for {{ spotifyUserName }}
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!--end - playlists-->
+
+    <!--begin - artists-->
+    <div class="col-sm-4">
+        <div class="card" *ngIf="(artists && !userNotFound)">
+
+            <div class="card-body" *ngIf="artists">
+                <h5 class="card-title">Artists</h5>
+
+                <div>
+                    <table class='table table-striped' aria-labelledby="tableLabel">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Tracks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let artist of artists">
+                                <td>{{ artist.name }}</td>
+                                <td>{{ artist.tracks.length }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <!--end - artists-->
+
+    <!--begin - genres-->
+    <div class="col-sm-4">
+        <div class="card" *ngIf="(genres && !userNotFound)">
+
+            <div class="card-body" >
+                <h5 class="card-title">Genres</h5>
+
+                <div *ngIf="artists">
+                    <table class='table table-striped' aria-labelledby="tableLabel">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Artists</th>
+                                <th>Tracks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let genre of genres">
+                                <td>{{ genre.name }}</td>
+                                <td>{{ genre.artists.length }}</td>
+                                <td>{{ genre.tracks.length }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <!--end - genres-->
+
+</div>
+
+
+
+
