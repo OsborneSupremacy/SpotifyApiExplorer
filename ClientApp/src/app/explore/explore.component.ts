@@ -176,10 +176,23 @@ export class ExploreComponent implements OnInit {
                 (result) => {
                     this.audioFeatures.push(result);
                     track.audioFeatures = result;
+                    this.calculateMetrics();
                 },
                 (error) => this.HttpClientErrorHandler(error)
             );
         }
+    }
+
+    private calculateMetrics = () => {
+        this.avgAudioFeatures.danceability = this.calcAverage(this.audioFeatures.map(a => a.danceability));
+        this.avgAudioFeatures.energy = this.calcAverage(this.audioFeatures.map(a => a.energy));
+        this.avgAudioFeatures.loudness = this.calcAverage(this.audioFeatures.map(a => a.loudness));
+        this.avgAudioFeatures.speechiness = this.calcAverage(this.audioFeatures.map(a => a.speechiness));
+        this.avgAudioFeatures.acousticness = this.calcAverage(this.audioFeatures.map(a => a.acousticness));
+        this.avgAudioFeatures.instrumentalness = this.calcAverage(this.audioFeatures.map(a => a.instrumentalness));
+        this.avgAudioFeatures.liveness = this.calcAverage(this.audioFeatures.map(a => a.liveness));
+        this.avgAudioFeatures.valence = this.calcAverage(this.audioFeatures.map(a => a.valence));
+        this.avgAudioFeatures.tempo = this.calcAverage(this.audioFeatures.map(a => a.tempo));
     }
 
     // begin - HttpClient Observables
@@ -248,6 +261,8 @@ export class ExploreComponent implements OnInit {
         hce.Unexpected = true;
         return hce;
     };
+
+    private calcAverage = list => list.reduce((prev, curr) => prev + curr) / list.length;
     // end - utility functions
 
 }
