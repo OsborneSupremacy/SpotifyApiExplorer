@@ -35,23 +35,20 @@ export class ExploreComponent implements OnInit {
     ngOnInit() {
     }
 
-    private tokenRequester = () => {
-        return this.http.get<Token>(this.baseUrl + 'token');
-    }
+    public findUser() {
 
-    private playListRequestor = (token: Token) => {
-        let url = `${this.apiBaseUrl}/users/${this.spotifyUserName}/playlists`;
-        return this.http.get<UserPlaylists>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } });
-    }
+        this.userNotFound = false;
+        this.tracks = new Array();
+        this.artists = new Array();
+        this.genres = new Array();
 
-    private playListMetaRequestor = (token: Token, playlist: PlayList) => {
-        let url = `${this.apiBaseUrl}/playlists/${playlist.id}/tracks?limit=${this.trackLimit}`;
-        return this.http.get<PlayListMeta>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } });
-    }
+        this.tokenRequester().subscribe(
+            (result) => {
+                this.getUserPlayLists(result);
+            },
+            (error) => this.HttpClientErrorHandler(error)
+        );
 
-    private artistRequestor = (token: Token, artist: Artist) => {
-        let url = `${this.apiBaseUrl}/artists/${artist.id}`;
-        return this.http.get<Artist>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } });
     }
 
     private getUserPlayLists = (token: Token) => {
@@ -94,7 +91,7 @@ export class ExploreComponent implements OnInit {
 
     private getArtistGenres = (token: Token) => {
         for (let artist of this.artists) {
-            if(artist.id) // only try this if artist has an ID
+            if (artist.id) // only try this if artist has an ID
                 this.artistRequestor(token, artist).subscribe(
                     (result) => {
                         result.tracks = artist.tracks;
@@ -137,6 +134,45 @@ export class ExploreComponent implements OnInit {
         this.sortArtists();
     }
 
+    private addTrackArtistsToList = (track: Track) => {
+        for (let artist of track.artists) {
+            // add artist to list only if not already in list
+            let existingArtist = this.artists.find((art: Artist) => {
+                return art.id === artist.id;
+            });
+            if (existingArtist)
+                existingArtist.tracks.push(track);
+            if (!existingArtist) {
+                artist.tracks = new Array();
+                artist.tracks.push(track);
+                this.artists.push(artist);
+            }
+        }
+    }
+
+    // begin - HttpClient Observables
+    private tokenRequester = () => {
+        return this.http.get<Token>(this.baseUrl + 'token');
+    }
+
+    private playListRequestor = (token: Token) => {
+        let url = `${this.apiBaseUrl}/users/${this.spotifyUserName}/playlists`;
+        return this.http.get<UserPlaylists>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } });
+    }
+
+    private playListMetaRequestor = (token: Token, playlist: PlayList) => {
+        let url = `${this.apiBaseUrl}/playlists/${playlist.id}/tracks?limit=${this.trackLimit}`;
+        return this.http.get<PlayListMeta>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } });
+    }
+
+    private artistRequestor = (token: Token, artist: Artist) => {
+        let url = `${this.apiBaseUrl}/artists/${artist.id}`;
+        return this.http.get<Artist>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } });
+    }
+    // end - HttpClient Observables
+
+
+    // begin - utility functions
     private sortPlaylists = () => {
         this.userPlaylists.items.sort((a, b) => {
             if (a.tracks.length === b.tracks.length)
@@ -165,39 +201,6 @@ export class ExploreComponent implements OnInit {
         });
     }
 
-    private addTrackArtistsToList = (track: Track) => {
-        for (let artist of track.artists) {
-            // add artist to list only if not already in list
-            let existingArtist = this.artists.find((art: Artist) => {
-                return art.id === artist.id;
-            });
-            if (existingArtist)
-                existingArtist.tracks.push(track);
-            if (!existingArtist) {
-                artist.tracks = new Array();
-                artist.tracks.push(track);
-                this.artists.push(artist);
-            }
-        }
-    }
-
-    public findUser() {
-
-        this.userNotFound = false;
-        this.tracks = new Array();
-        this.artists = new Array();
-        this.genres = new Array();
-
-        this.tokenRequester().subscribe(
-            (result) => {
-                this.getUserPlayLists(result);
-            },
-            (error) => this.HttpClientErrorHandler(error)
-        );
-
-    };
-
-
     private HttpClientErrorHandler = (error: any) => {
         let hce = new HttpClientError();
         if (error.status === 404) {
@@ -208,6 +211,7 @@ export class ExploreComponent implements OnInit {
         hce.Unexpected = true;
         return hce;
     };
+    // end - utility functions
 
 }
 

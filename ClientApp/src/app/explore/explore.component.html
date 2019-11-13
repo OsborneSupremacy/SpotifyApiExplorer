@@ -7,14 +7,18 @@
 <p>&nbsp;</p>
 
 <h5 *ngIf="userNotFound" class="alert alert-danger" role="alert">
-    User not found!
+    User {{spotifyUserName}} not found!
+</h5>
+
+<h5 *ngIf="(!userNotFound && userPlaylists && userPlaylists.items.length === 0)" class="alert alert-warning" role="alert">
+    User {{spotifyUserName}} exists, but has no public playlists.
 </h5>
 
 <div class="row">
 
     <!--begin - playlists-->
     <div class="col-sm-4">
-        <div class="card" *ngIf="(userPlaylists && !userNotFound)">
+        <div class="card" >
             <div class="card-body">
                 <h5 class="card-title">Playlists</h5>
 
@@ -32,9 +36,6 @@
                         </tr>
                     </tbody>
                 </table>
-                <div *ngIf="userPlaylists.length === 0">
-                    No playlists found for {{ spotifyUserName }}
-                </div>
 
             </div>
         </div>
@@ -43,9 +44,9 @@
 
     <!--begin - artists-->
     <div class="col-sm-4">
-        <div class="card" *ngIf="(artists && !userNotFound)">
+        <div class="card" >
 
-            <div class="card-body" *ngIf="artists">
+            <div class="card-body" >
                 <h5 class="card-title">Artists</h5>
 
                 <div>
@@ -73,12 +74,12 @@
 
     <!--begin - genres-->
     <div class="col-sm-4">
-        <div class="card" *ngIf="(genres && !userNotFound)">
+        <div class="card" >
 
             <div class="card-body" >
                 <h5 class="card-title">Genres</h5>
 
-                <div *ngIf="artists">
+                <div>
                     <table class='table table-striped' aria-labelledby="tableLabel">
                         <thead>
                             <tr>
