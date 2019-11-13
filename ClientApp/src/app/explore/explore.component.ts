@@ -126,6 +126,7 @@ export class ExploreComponent implements OnInit {
     private createTrackAndArtistLists = (playlist: PlayList, items: PlaylistTrackMeta[]) => {
         // loop through tracks
         for (let meta of items) {
+            if (meta.track === null) continue; // occassionally a track's meta will not have a track
             playlist.tracks.push(meta.track);
             this.tracks.push(meta.track);
             this.addTrackArtistsToList(meta.track);

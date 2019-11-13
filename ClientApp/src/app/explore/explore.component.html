@@ -1,6 +1,6 @@
 
 <input [(ngModel)]="spotifyUserName" type="text" placeholder="Spotify Username" />
-<button (click)="findUser()">
+<button (click)="findUser()" >
     Get Playlists
 </button>
 
@@ -10,7 +10,7 @@
     User {{spotifyUserName}} not found!
 </h5>
 
-<h5 *ngIf="(!userNotFound && userPlaylists && userPlaylists.items.length === 0)" class="alert alert-warning" role="alert">
+<h5 *ngIf="(!userNotFound && userPlaylists && userPlaylists.items && userPlaylists.items.length == 0)" class="alert alert-warning" role="alert">
     User {{spotifyUserName}} exists, but has no public playlists.
 </h5>
 
@@ -22,7 +22,7 @@
             <div class="card-body">
                 <h5 class="card-title">Playlists</h5>
 
-                <table class='table table-striped' aria-labelledby="tableLabel">
+                <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="userPlaylists" >
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -50,7 +50,7 @@
                 <h5 class="card-title">Artists</h5>
 
                 <div>
-                    <table class='table table-striped' aria-labelledby="tableLabel">
+                    <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="artists">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -80,7 +80,7 @@
                 <h5 class="card-title">Genres</h5>
 
                 <div>
-                    <table class='table table-striped' aria-labelledby="tableLabel">
+                    <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="genres" >
                         <thead>
                             <tr>
                                 <th>Name</th>
