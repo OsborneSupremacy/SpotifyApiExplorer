@@ -93,7 +93,6 @@
                     </table>
                 </div>
             </div>
-
         </div>
     </div>
     <!--end - genres-->
@@ -112,6 +111,17 @@
             <div class="card-body">
                 <h5 class="card-title">Audio Features</h5>
                 <div>
+
+                    <dialog id="metricsDialog">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ metricsDialogTitle }}</h5>
+                                <p>{{ metricsDialogContent }}</p>
+                                <button (click)="closeMetricsDialog()">OK</button>
+                            </div>
+                        </div>
+                    </dialog>
+
                     <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="avgAudioFeatures">
                         <thead>
                             <tr>
@@ -122,7 +132,7 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td data-toggle="tooltip" title="Danceability describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable." >Danceability</td>
+                                <td (click)="showMetricsDialog('Danceability', 'Danceability describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable.')" >Danceability</td>
                                 <td>{{ avgAudioFeatures.danceability |  number:'1.2-2' }}</td>
                                 <td>0 = least, 1 = most</td>
                             </tr>

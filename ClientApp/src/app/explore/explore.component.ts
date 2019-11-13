@@ -263,6 +263,23 @@ export class ExploreComponent implements OnInit {
     };
 
     private calcAverage = list => list.reduce((prev, curr) => prev + curr) / list.length;
+
+
+    public metricsDialogTitle: string = ``;
+    public metricsDialogContent: string = ``;
+
+    public closeMetricsDialog = () => {
+        let dialog = document.getElementById('metricsDialog') as HTMLDialogElement;
+        dialog.close();
+    };
+
+    public showMetricsDialog = (title: string, content: string) => {
+        this.metricsDialogTitle = title;
+        this.metricsDialogContent = content;
+        let dialog = document.getElementById('metricsDialog') as HTMLDialogElement;
+        dialog.showModal();
+    }
+
     // end - utility functions
 
 }
