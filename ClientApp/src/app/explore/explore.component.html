@@ -1,6 +1,6 @@
 
 <input [(ngModel)]="spotifyUserName" type="text" placeholder="Spotify Username" />
-<button (click)="findUser()" >
+<button (click)="findUser()">
     Get Playlists
 </button>
 
@@ -14,29 +14,30 @@
     User {{spotifyUserName}} exists, but has no public playlists.
 </h5>
 
+<!--begin - row 1 -->
 <div class="row">
 
     <!--begin - playlists-->
     <div class="col-sm-4">
-        <div class="card" >
+        <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Playlists</h5>
-
-                <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="userPlaylists" >
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Tracks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let playlist of userPlaylists.items">
-                            <td>{{ playlist.name }}</td>
-                            <td>{{ playlist.tracks.length }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
+                <div class="scroll">
+                    <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="userPlaylists">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Tracks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let playlist of userPlaylists.items">
+                                <td>{{ playlist.name }}</td>
+                                <td>{{ playlist.tracks.length }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -44,12 +45,10 @@
 
     <!--begin - artists-->
     <div class="col-sm-4">
-        <div class="card" >
-
-            <div class="card-body" >
+        <div class="card">
+            <div class="card-body">
                 <h5 class="card-title">Artists</h5>
-
-                <div>
+                <div class="scroll">
                     <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="artists">
                         <thead>
                             <tr>
@@ -65,22 +64,18 @@
                         </tbody>
                     </table>
                 </div>
-
             </div>
-
         </div>
     </div>
     <!--end - artists-->
 
     <!--begin - genres-->
     <div class="col-sm-4">
-        <div class="card" >
-
-            <div class="card-body" >
+        <div class="card">
+            <div class="card-body">
                 <h5 class="card-title">Genres</h5>
-
-                <div>
-                    <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="genres" >
+                <div class="scroll">
+                    <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="genres">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -97,7 +92,6 @@
                         </tbody>
                     </table>
                 </div>
-
             </div>
 
         </div>
@@ -105,7 +99,50 @@
     <!--end - genres-->
 
 </div>
+<!--end - row 1 -->
 
+<p>&nbsp;</p>
 
+<!--begin - row 2 -->
+<div class="row">
 
+    <!--begin - playlists-->
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Audio Features</h5>
+                <div class="scroll">
+                    <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="avgAudioFeatures">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end - playlists-->
 
+    <!--begin - section 2-->
+    <div class="col-sm-4">
+
+    </div>
+    <!--end - section 2-->
+
+    <!--begin - section 3-->
+    <div class="col-sm-4">
+
+    </div>
+    <!--end - section 3-->
+
+</div>
+<!--end - row 2 -->

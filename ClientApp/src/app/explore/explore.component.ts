@@ -17,6 +17,10 @@ export class ExploreComponent implements OnInit {
 
     public tracks: Track[];
 
+    public audioFeatures: AudioFeatures[];
+
+    public avgAudioFeatures: AudioFeatures;
+
     public artists: Artist[];
 
     public genres: Genre[];
@@ -41,6 +45,8 @@ export class ExploreComponent implements OnInit {
         this.tracks = new Array();
         this.artists = new Array();
         this.genres = new Array();
+        this.audioFeatures = new Array();
+        this.avgAudioFeatures = new AudioFeatures();
 
         this.tokenRequester().subscribe(
             (result) => {
@@ -90,15 +96,28 @@ export class ExploreComponent implements OnInit {
     }
 
     private getArtistGenres = (token: Token) => {
+        let processed = 0;
         for (let artist of this.artists) {
-            if (artist.id) // only try this if artist has an ID
-                this.artistRequestor(token, artist).subscribe(
-                    (result) => {
-                        result.tracks = artist.tracks;
-                        this.addArtistGenresToList(result);
-                    },
-                    (error) => this.HttpClientErrorHandler(error)
-                );
+
+            if (!artist.id) { // skip artists without an ID
+                processed += 1;
+                continue;
+            }
+
+            this.artistRequestor(token, artist).subscribe(
+                (result) => {
+                    result.tracks = artist.tracks;
+                    this.addArtistGenresToList(result);
+                    processed += 1;
+                    // one all artists have been processed, move on to next step
+                    if(processed >= this.artists.length)
+                        this.getAudioFeatures(token);
+                },
+                (error) => {
+                    this.HttpClientErrorHandler(error)
+                    processed += 1;
+                }
+            );
         }
     }
 
@@ -124,7 +143,7 @@ export class ExploreComponent implements OnInit {
     }
 
     private createTrackAndArtistLists = (playlist: PlayList, items: PlaylistTrackMeta[]) => {
-        // loop through tracks
+        // loop through tracks, adding their artists to list
         for (let meta of items) {
             if (meta.track === null) continue; // occassionally a track's meta will not have a track
             playlist.tracks.push(meta.track);
@@ -151,6 +170,18 @@ export class ExploreComponent implements OnInit {
         }
     }
 
+    private getAudioFeatures = (token: Token) => {
+        for (let track of this.tracks) {
+            this.audioFeaturesRequestor(token, track).subscribe(
+                (result) => {
+                    this.audioFeatures.push(result);
+                    track.audioFeatures = result;
+                },
+                (error) => this.HttpClientErrorHandler(error)
+            );
+        }
+    }
+
     // begin - HttpClient Observables
     private tokenRequester = () => {
         return this.http.get<Token>(this.baseUrl + 'token');
@@ -170,6 +201,12 @@ export class ExploreComponent implements OnInit {
         let url = `${this.apiBaseUrl}/artists/${artist.id}`;
         return this.http.get<Artist>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } });
     }
+
+    private audioFeaturesRequestor = (token: Token, track: Track) => {
+        let url = `${this.apiBaseUrl}/audio-features/${track.id}`;
+        return this.http.get<AudioFeatures>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } });
+    }
+
     // end - HttpClient Observables
 
 
@@ -181,7 +218,6 @@ export class ExploreComponent implements OnInit {
             else
                 return b.tracks.length >= a.tracks.length ? 1 : -1;
         });
-
     }
 
     private sortArtists = () => {
@@ -277,11 +313,12 @@ interface Artist {
     tracks: Track[];
 }
 
-interface AudioFeatures {
+class AudioFeatures {
     danceability: number;
     energy: number;
     key: number;
     loudness: number;
+    mode: number;
     speechiness: number;
     acousticness: number;
     instrumentalness: number;
