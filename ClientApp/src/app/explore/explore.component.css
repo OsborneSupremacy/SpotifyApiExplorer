@@ -5,5 +5,12 @@
 }
 
 dialog {
-    width: 500px;
+    width: 80%;
+}
+
+div.imageFrame {
+    width: 100%;
+    min-height: 500px;
+    background-position: bottom;
+    background-repeat: no-repeat;
 }

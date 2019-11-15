@@ -19,11 +19,15 @@ export class ExploreComponent implements OnInit {
 
     public audioFeatures: AudioFeatures[];
 
-    public avgAudioFeatures: AudioFeatures;
-
     public artists: Artist[];
 
     public genres: Genre[];
+
+    public selectedMetric: Metric;
+
+    public metrics: Metric[];
+
+    public metricsEnvelope: MetricEnvelope;
 
     // track limit per playlist (100 is max and default)
     private trackLimit: number = 100;
@@ -33,6 +37,92 @@ export class ExploreComponent implements OnInit {
         @Inject('BASE_URL') private baseUrl: string,
         @Inject('SPOTIFY_BASE_URL') private apiBaseUrl: string
     ) {
+
+        this.metricsEnvelope = <MetricEnvelope>{ Populated: false };
+
+        this.metricsEnvelope.Danceability = <Metric>{
+            Title: `Danceability`,
+            Content: `Danceability describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity. A value of 0.0 is least danceable and 1.0 is most danceable.`,
+            Unit: ``,
+            Min: 0,
+            Max: 1
+        };
+
+        this.metricsEnvelope.Energy = <Metric>{
+            Title: `Energy`,
+            Content: `Energy is a measure from 0.0 to 1.0 and represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy. For example, death metal has high energy, while a Bach prelude scores low on the scale. Perceptual features contributing to this attribute include dynamic range, perceived loudness, timbre, onset rate, and general entropy.`,
+            Unit: ``,
+            Min: 0,
+            Max: 1
+        };
+
+        this.metricsEnvelope.Loudness = <Metric>{
+            Title: `Loudness`,
+            Content: `The overall loudness of a track in decibels (dB). Loudness values are averaged across the entire track and are useful for comparing relative loudness of tracks. Loudness is the quality of a sound that is the primary psychological correlate of physical strength (amplitude). Values typical range between -60 and 0 db.`,
+            ImageFile: ``,
+            Unit: `dB`,
+            Min: -60,
+            Max: 0
+        };
+
+        this.metricsEnvelope.Valence = <Metric>{
+            Title: `Valence`,
+            Content: `A measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry).'`,
+            Unit: ``,
+            Min: 0,
+            Max: 1
+        };
+
+        this.metricsEnvelope.Speechiness = <Metric>{
+            Title: `Speechiness`,
+            Content: `Speechiness detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value. Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music. Values below 0.33 most likely represent music and other non-speech-like tracks.`,
+            Unit: ``,
+            Min: 0,
+            Max: 1
+        };
+
+        this.metricsEnvelope.Acousticness = <Metric>{
+            Title: `Acousticness`,
+            Content: `A confidence measure from 0.0 to 1.0 of whether the track is acoustic. 1.0 represents high confidence the track is acoustic.`,
+            Unit: ``,
+            Min: 0,
+            Max: 1
+        };
+
+        this.metricsEnvelope.Instrumentalness = <Metric>{
+            Title: `Instrumentalness`,
+            Content: `Predicts whether a track contains no vocals. “Ooh” and “aah” sounds are treated as instrumental in this context. Rap or spoken word tracks are clearly “vocal”. The closer the instrumentalness value is to 1.0, the greater likelihood the track contains no vocal content. Values above 0.5 are intended to represent instrumental tracks, but confidence is higher as the value approaches 1.0.`,
+            Unit: ``,
+            Min: 0,
+            Max: 1
+        };
+
+        this.metricsEnvelope.Liveness = <Metric>{
+            Title: `Liveness`,
+            Content: `Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live. A value above 0.8 provides strong likelihood that the track is live.`,
+            Unit: ``,
+            Min: 0,
+            Max: 1
+        };
+
+        this.metricsEnvelope.Tempo = <Metric>{
+            Title: `Tempo`,
+            Content: `The overall estimated tempo of a track in beats per minute (BPM). In musical terminology, tempo is the speed or pace of a given piece and derives directly from the average beat duration.`,
+            Unit: `BPM`,
+            Min: 0,
+            Max: 250
+        };
+
+        this.metrics = new Array();
+        this.metrics.push(this.metricsEnvelope.Danceability);
+        this.metrics.push(this.metricsEnvelope.Energy);
+        this.metrics.push(this.metricsEnvelope.Loudness);
+        this.metrics.push(this.metricsEnvelope.Valence);
+        this.metrics.push(this.metricsEnvelope.Speechiness);
+        this.metrics.push(this.metricsEnvelope.Acousticness);
+        this.metrics.push(this.metricsEnvelope.Instrumentalness);
+        this.metrics.push(this.metricsEnvelope.Liveness);
+        this.metrics.push(this.metricsEnvelope.Tempo);
 
     }
 
@@ -46,7 +136,6 @@ export class ExploreComponent implements OnInit {
         this.artists = new Array();
         this.genres = new Array();
         this.audioFeatures = new Array();
-        this.avgAudioFeatures = new AudioFeatures();
 
         this.tokenRequester().subscribe(
             (result) => {
@@ -184,15 +273,16 @@ export class ExploreComponent implements OnInit {
     }
 
     private calculateMetrics = () => {
-        this.avgAudioFeatures.danceability = this.calcAverage(this.audioFeatures.map(a => a.danceability));
-        this.avgAudioFeatures.energy = this.calcAverage(this.audioFeatures.map(a => a.energy));
-        this.avgAudioFeatures.loudness = this.calcAverage(this.audioFeatures.map(a => a.loudness));
-        this.avgAudioFeatures.speechiness = this.calcAverage(this.audioFeatures.map(a => a.speechiness));
-        this.avgAudioFeatures.acousticness = this.calcAverage(this.audioFeatures.map(a => a.acousticness));
-        this.avgAudioFeatures.instrumentalness = this.calcAverage(this.audioFeatures.map(a => a.instrumentalness));
-        this.avgAudioFeatures.liveness = this.calcAverage(this.audioFeatures.map(a => a.liveness));
-        this.avgAudioFeatures.valence = this.calcAverage(this.audioFeatures.map(a => a.valence));
-        this.avgAudioFeatures.tempo = this.calcAverage(this.audioFeatures.map(a => a.tempo));
+        this.metricsEnvelope.Populated = true;
+        this.metricsEnvelope.Danceability.Value = this.calcAverage(this.audioFeatures.map(a => a.danceability));
+        this.metricsEnvelope.Energy.Value = this.calcAverage(this.audioFeatures.map(a => a.energy));
+        this.metricsEnvelope.Loudness.Value = this.calcAverage(this.audioFeatures.map(a => a.loudness));
+        this.metricsEnvelope.Speechiness.Value = this.calcAverage(this.audioFeatures.map(a => a.speechiness));
+        this.metricsEnvelope.Acousticness.Value = this.calcAverage(this.audioFeatures.map(a => a.acousticness));
+        this.metricsEnvelope.Instrumentalness.Value = this.calcAverage(this.audioFeatures.map(a => a.instrumentalness));
+        this.metricsEnvelope.Liveness.Value = this.calcAverage(this.audioFeatures.map(a => a.liveness));
+        this.metricsEnvelope.Valence.Value = this.calcAverage(this.audioFeatures.map(a => a.valence));
+        this.metricsEnvelope.Tempo.Value = this.calcAverage(this.audioFeatures.map(a => a.tempo));
     }
 
     // begin - HttpClient Observables
@@ -265,23 +355,43 @@ export class ExploreComponent implements OnInit {
     private calcAverage = list => list.reduce((prev, curr) => prev + curr) / list.length;
 
 
-    public metricsDialogTitle: string = ``;
-    public metricsDialogContent: string = ``;
-
     public closeMetricsDialog = () => {
         let dialog = document.getElementById('metricsDialog') as HTMLDialogElement;
         dialog.close();
+        this.selectedMetric = null;
     };
 
-    public showMetricsDialog = (title: string, content: string) => {
-        this.metricsDialogTitle = title;
-        this.metricsDialogContent = content;
+    public selectMetric = (metric: Metric) => {
+        this.selectedMetric = metric;
         let dialog = document.getElementById('metricsDialog') as HTMLDialogElement;
         dialog.showModal();
     }
 
     // end - utility functions
 
+}
+
+class Metric {
+    Title: string;
+    Content: string;
+    ImageFile: string;
+    Unit: string;
+    Min: number;
+    Max: number;
+    Value: number;
+}
+
+class MetricEnvelope {
+    Populated: boolean;
+    Danceability: Metric;
+    Energy: Metric;
+    Loudness: Metric;
+    Valence: Metric;
+    Speechiness: Metric;
+    Acousticness: Metric;
+    Instrumentalness: Metric;
+    Liveness: Metric;
+    Tempo: Metric;
 }
 
 class HttpClientError {
