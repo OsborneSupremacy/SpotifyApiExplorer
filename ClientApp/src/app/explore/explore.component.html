@@ -167,7 +167,9 @@
                 {{ selectedMetric.Content }}
 
                 <div class="imageFrame" [ngStyle]="{'background-image':'url(/assets/images/' + (selectedMetric.Title | lowercase) + '.png)'}">
-                    <br />
+                    <div style="border: solid 1px red; width: 100%; height: 100%;">
+                        &nbsp;
+                    </div>
                 </div>
 
                 <button class="btn btn-primary" (click)="closeMetricsDialog()">OK</button>
@@ -177,5 +179,8 @@
     </div>
 </div>
 
-
+<!--pre-load images. yeah, this is not the best way of doing this.-->
+<div style="display: none">
+    <img *ngFor="let metric of metrics" src="/assets/images/{{ metric.Title | lowercase }}.png" />
+</div>
 
