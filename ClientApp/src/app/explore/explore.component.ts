@@ -261,6 +261,7 @@ export class ExploreComponent implements OnInit {
 
     private getAudioFeatures = (token: Token) => {
         for (let track of this.tracks) {
+            if (track.id === null) continue;
             this.audioFeaturesRequestor(token, track).subscribe(
                 (result) => {
                     this.audioFeatures.push(result);
@@ -356,17 +357,12 @@ export class ExploreComponent implements OnInit {
 
 
     public closeMetricsDialog = () => {
-        let dialog = document.getElementById('metricsDialog') as HTMLDialogElement;
-        dialog.close();
         this.selectedMetric = null;
     };
 
     public selectMetric = (metric: Metric) => {
         this.selectedMetric = metric;
-        let dialog = document.getElementById('metricsDialog') as HTMLDialogElement;
-        dialog.showModal();
     }
-
     // end - utility functions
 
 }

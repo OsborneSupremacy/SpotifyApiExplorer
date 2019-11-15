@@ -157,16 +157,25 @@
 <!--end - row 2 -->
 
 
-<dialog id="metricsDialog" >
-    <div *ngIf="selectedMetric">
-        <h5 class="card-title">{{ selectedMetric.Title }}</h5>
-        <p>{{ selectedMetric.Content }}</p>
-        <div class="imageFrame" [ngStyle]="{'background-image':'url(/assets/images/' + (selectedMetric.Title | lowercase) + '.png)'}" >
-            <br />
+<div class="divalog" *ngIf="selectedMetric">
+    <div>
+        <div class="card">
+            <div class="card-header">
+                {{ selectedMetric.Title }}
+            </div>
+            <div class="card-body">
+                {{ selectedMetric.Content }}
+
+                <div class="imageFrame" [ngStyle]="{'background-image':'url(/assets/images/' + (selectedMetric.Title | lowercase) + '.png)'}">
+                    <br />
+                </div>
+
+                <button class="btn btn-primary" (click)="closeMetricsDialog()">OK</button>
+            </div>
         </div>
-        <p>&nbsp;</p>
-        <button class="btn btn-primary" (click)="closeMetricsDialog()">OK</button>
+        
     </div>
-</dialog>
+</div>
+
 
 
