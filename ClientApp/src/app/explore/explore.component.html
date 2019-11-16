@@ -138,7 +138,7 @@
                                     {{ metric.Title }}
                                 </td>
                                 <td>{{ metric.Value | number:'1.2-2' }} {{ metric.Unit }}</td>
-                                <td>{{ metric.Min }} - {{ metric.Max }} {{ metric.Unit }}</td>
+                                <td>{{ metric.Min | number:'1.2-2' }} - {{ metric.Max | number:'1.2-2' }} {{ metric.Unit }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -158,24 +158,23 @@
 
 
 <div class="divalog" *ngIf="selectedMetric">
-    <div>
-        <div class="card">
-            <div class="card-header">
-                {{ selectedMetric.Title }}
-            </div>
-            <div class="card-body">
-                {{ selectedMetric.Content }}
-
-                <div class="imageFrame" [ngStyle]="{'background-image':'url(/assets/images/' + (selectedMetric.Title | lowercase) + '.png)'}">
-                    <div style="border: solid 1px red; width: 100%; height: 100%;">
-                        &nbsp;
-                    </div>
-                </div>
-
-                <button class="btn btn-primary" (click)="closeMetricsDialog()">OK</button>
-            </div>
+    <div class="card">
+        <div class="card-header">
+            {{ selectedMetric.Title }}
         </div>
-        
+        <div class="card-body">
+            <p>{{ selectedMetric.Content }}</p>
+
+            <p>Average {{ selectedMetric.Title }} of {{spotifyUserName}}'s public playlists: {{ selectedMetric.Value | number:'1.2-2' }}</p>
+
+            <div class="imageFrame" style="" [ngStyle]="{'background-image':'url(/assets/images/' + (selectedMetric.Title | lowercase) + '.png)'}">
+                <div>
+                    <div [ngStyle]="{'left': (selectedMetric.MarkerPercentage) + '%'}" >&nbsp;</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" (click)="closeMetricsDialog()">OK</button>
+        </div>
     </div>
 </div>
 

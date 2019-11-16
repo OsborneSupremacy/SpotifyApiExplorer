@@ -67,7 +67,7 @@ export class ExploreComponent implements OnInit {
 
         this.metricsEnvelope.Valence = <Metric>{
             Title: `Valence`,
-            Content: `A measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry).'`,
+            Content: `A measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry).`,
             Unit: ``,
             Min: 0,
             Max: 1
@@ -123,7 +123,6 @@ export class ExploreComponent implements OnInit {
         this.metrics.push(this.metricsEnvelope.Instrumentalness);
         this.metrics.push(this.metricsEnvelope.Liveness);
         this.metrics.push(this.metricsEnvelope.Tempo);
-
     }
 
     ngOnInit() {
@@ -136,6 +135,7 @@ export class ExploreComponent implements OnInit {
         this.artists = new Array();
         this.genres = new Array();
         this.audioFeatures = new Array();
+        this.metricsEnvelope.Populated = false;
 
         this.tokenRequester().subscribe(
             (result) => {
@@ -284,6 +284,13 @@ export class ExploreComponent implements OnInit {
         this.metricsEnvelope.Liveness.Value = this.calcAverage(this.audioFeatures.map(a => a.liveness));
         this.metricsEnvelope.Valence.Value = this.calcAverage(this.audioFeatures.map(a => a.valence));
         this.metricsEnvelope.Tempo.Value = this.calcAverage(this.audioFeatures.map(a => a.tempo));
+
+        for (let metric of this.metrics) {
+            let mp = (metric.Value / (metric.Max - metric.Min));
+            if (mp < 0)
+                mp = 1.0 + mp;
+            metric.MarkerPercentage = mp * 100.0;
+        }
     }
 
     // begin - HttpClient Observables
@@ -375,6 +382,7 @@ class Metric {
     Min: number;
     Max: number;
     Value: number;
+    MarkerPercentage: number;
 }
 
 class MetricEnvelope {
