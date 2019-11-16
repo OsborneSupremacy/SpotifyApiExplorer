@@ -34,7 +34,7 @@ div.imageFrame {
 }
 
     div.imageFrame > div {
-        /*border: solid 1px blue;*/
+        border: solid 1px blue;
         position: absolute;
         /* this creates a box around the plot area of Spotify's distribution images */
         width: 847px;
