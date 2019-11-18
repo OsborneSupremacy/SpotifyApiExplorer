@@ -1,5 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { EMPTY, Observable } from 'rxjs';
+import { catchError, retry, retryWhen, delay, take, tap } from 'rxjs/operators';
 
 @Component({
     selector: 'app-explore',
@@ -161,23 +163,27 @@ export class ExploreComponent implements OnInit {
         this.metricsEnvelope.Populated = false;
 
         this.tokenRequester().subscribe(
-            (result) => {
-                this.getUserPlayLists(result);
-            },
+            (result) => this.tokenReceived(result),
             (error) => this.HttpClientErrorHandler(error)
         );
 
     }
 
-    private getUserPlayLists = (token: Token) => {
+    private tokenReceived = (token: Token) => {
+        this.getUserPlaylists(token);
+    }
+
+    private userPlaylistsRetrieved = (token: Token, result: UserPlaylists) => {
+        this.userPlaylists = result;
+        this.userPlaylists.items.sort((a, b) => {
+            return a.name >= b.name ? 1 : -1; // sort by name initially
+        });
+        this.getPlayListMetadatum(token);
+    }
+
+    private getUserPlaylists = (token: Token) => {
         this.playListRequestor(token).subscribe(
-            (result) => {
-                this.userPlaylists = result;
-                this.userPlaylists.items.sort((a, b) => {
-                    return a.name >= b.name ? 1 : -1; // sort by name initially
-                });
-                this.getPlayListMetadatum(token);
-            },
+            (result) => this.userPlaylistsRetrieved(token, result),
             (error) => {
                 if (this.HttpClientErrorHandler(error).NotFound)
                     this.userNotFound = true;
@@ -332,12 +338,35 @@ export class ExploreComponent implements OnInit {
 
     private artistRequestor = (token: Token, artist: Artist) => {
         let url = `${this.apiBaseUrl}/artists/${artist.id}`;
-        return this.http.get<Artist>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } });
+        return this.http.get<Artist>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } })
+            .pipe(
+                retryWhen(errors =>
+                    errors.pipe(
+                        delay(10000),
+                        tap(errorStatus => {
+                            console.log('Retrying...');
+                        })
+                    )
+                )
+            );
     }
 
     private audioFeaturesRequestor = (token: Token, track: Track) => {
         let url = `${this.apiBaseUrl}/audio-features/${track.id}`;
-        return this.http.get<AudioFeatures>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } });
+        return this.http.get<AudioFeatures>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } })
+            .pipe(
+                retryWhen(errors =>
+                    errors.pipe(
+                        delay(10000),
+                        tap(errorStatus => {
+                            console.log('Retrying...');
+                        })
+                    )
+                )
+            );
+
+            
+        //.retryWhen((error) => { error.status == 429 ? return Observable.throw(error) : error.delay(500) });
     }
 
     // end - HttpClient Observables
