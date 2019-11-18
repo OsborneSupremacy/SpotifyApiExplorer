@@ -199,9 +199,9 @@ export class ExploreComponent implements OnInit {
             playlist.tracks = new Array();
             this.playListMetaRequestor(token, playlist).subscribe(
                 (result) => {
-                    this.createTrackAndArtistLists(playlist, result.items);
+                    this.createTrackAndArtistLists(token, playlist, result.items);
                     processed += 1;
-                    // once all playlists have been processed, move on to next step
+                    // once all playlists have been processed, get artist genres
                     if (processed >= this.userPlaylists.items.length)
                         this.getArtistGenres(token);
                 },
@@ -214,27 +214,17 @@ export class ExploreComponent implements OnInit {
     }
 
     private getArtistGenres = (token: Token) => {
-        let processed = 0;
+
         for (let artist of this.artists) {
 
-            if (!artist.id) { // skip artists without an ID
-                processed += 1;
-                continue;
-            }
+            if (!artist.id) continue; // skip artists without an ID
 
             this.artistRequestor(token, artist).subscribe(
                 (result) => {
                     result.tracks = artist.tracks;
                     this.addArtistGenresToList(result);
-                    processed += 1;
-                    // one all artists have been processed, move on to next step
-                    if(processed >= this.artists.length)
-                        this.getAudioFeatures(token);
                 },
-                (error) => {
-                    this.HttpClientErrorHandler(error)
-                    processed += 1;
-                }
+                (error) => this.HttpClientErrorHandler(error)
             );
         }
     }
@@ -260,13 +250,16 @@ export class ExploreComponent implements OnInit {
         }
     }
 
-    private createTrackAndArtistLists = (playlist: PlayList, items: PlaylistTrackMeta[]) => {
+    private createTrackAndArtistLists = (token: Token, playlist: PlayList, items: PlaylistTrackMeta[]) => {
         // loop through tracks, adding their artists to list
         for (let meta of items) {
             if (meta.track === null) continue; // occassionally a track's meta will not have a track
             playlist.tracks.push(meta.track);
             this.tracks.push(meta.track);
             this.addTrackArtistsToList(meta.track);
+
+            if (meta.track.id === null) continue; // get track audio features
+            this.getAudioFeatures(token, meta.track)
         }
         this.sortPlaylists();
         this.sortArtists();
@@ -287,18 +280,15 @@ export class ExploreComponent implements OnInit {
         }
     }
 
-    private getAudioFeatures = (token: Token) => {
-        for (let track of this.tracks) {
-            if (track.id === null) continue;
-            this.audioFeaturesRequestor(token, track).subscribe(
-                (result) => {
-                    this.audioFeatures.push(result);
-                    track.audioFeatures = result;
-                    this.calculateMetrics();
-                },
-                (error) => this.HttpClientErrorHandler(error)
-            );
-        }
+    private getAudioFeatures = (token: Token, track: Track) => {
+        this.audioFeaturesRequestor(token, track).subscribe(
+            (result) => {
+                this.audioFeatures.push(result);
+                track.audioFeatures = result;
+                this.calculateMetrics();
+            },
+            (error) => this.HttpClientErrorHandler(error)
+        );
     }
 
     private calculateMetrics = () => {
@@ -412,7 +402,6 @@ export class ExploreComponent implements OnInit {
     };
 
     private calcAverage = list => list.reduce((prev, curr) => prev + curr) / list.length;
-
 
     public closeMetricsDialog = () => {
         this.selectedMetric = null;
