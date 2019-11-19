@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SpotifyApiExplorer.Interface;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -6,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace SpotifyApiExplorer.Objects
 {
-    public class ApiRequestService
+    public class ApiRequestService : IApiRequestService
     {
         public ApiRequestService()
         {
-        }       
+        }
 
         public async Task<string> PostForm(HttpClient httpClient, string url, List<KeyValuePair<string, string>> nameValueList)
         {

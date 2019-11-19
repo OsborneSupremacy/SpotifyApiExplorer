@@ -16,10 +16,13 @@ export class ExploreComponent implements OnInit {
     public userNotFound: boolean = false;
 
     public userPlaylists: UserPlaylists;
+    public procesedPlaylists: number;
 
     public tracks: Track[];
+    public processedTracks: number;
 
     public audioFeatures: AudioFeatures[];
+    public processedArtists: number;
 
     public artists: Artist[];
 
@@ -155,6 +158,10 @@ export class ExploreComponent implements OnInit {
 
     public findUser() {
 
+        this.procesedPlaylists = 0;
+        this.processedArtists = 0;
+        this.processedTracks = 0;
+
         this.userNotFound = false;
         this.tracks = new Array();
         this.artists = new Array();
@@ -193,21 +200,19 @@ export class ExploreComponent implements OnInit {
 
     private getPlayListMetadatum = (token: Token) => {
 
-        var processed = 0;
-
         for (let playlist of this.userPlaylists.items) {
             playlist.tracks = new Array();
             this.playListMetaRequestor(token, playlist).subscribe(
                 (result) => {
                     this.createTrackAndArtistLists(token, playlist, result.items);
-                    processed += 1;
+                    this.procesedPlaylists += 1;
                     // once all playlists have been processed, get artist genres
-                    if (processed >= this.userPlaylists.items.length)
+                    if (this.procesedPlaylists >= this.userPlaylists.items.length)
                         this.getArtistGenres(token);
                 },
                 (error) => {
                     this.HttpClientErrorHandler(error);
-                    processed += 1;
+                    this.procesedPlaylists += 1;
                 }
             );
         }
@@ -217,14 +222,22 @@ export class ExploreComponent implements OnInit {
 
         for (let artist of this.artists) {
 
-            if (!artist.id) continue; // skip artists without an ID
+            if (!artist.id) {
+                this.processedArtists += 1;
+                continue; // skip artists without an ID
+            }
+            
 
             this.artistRequestor(token, artist).subscribe(
                 (result) => {
                     result.tracks = artist.tracks;
                     this.addArtistGenresToList(result);
+                    this.processedArtists += 1;
                 },
-                (error) => this.HttpClientErrorHandler(error)
+                (error) => {
+                    this.HttpClientErrorHandler(error);
+                    this.processedArtists += 1;
+                }
             );
         }
     }
@@ -258,7 +271,10 @@ export class ExploreComponent implements OnInit {
             this.tracks.push(meta.track);
             this.addTrackArtistsToList(meta.track);
 
-            if (meta.track.id === null) continue; // get track audio features
+            if (meta.track.id === null) {
+                this.processedTracks += 1;
+                continue;
+            }            
             this.getAudioFeatures(token, meta.track)
         }
         this.sortPlaylists();
@@ -286,8 +302,12 @@ export class ExploreComponent implements OnInit {
                 this.audioFeatures.push(result);
                 track.audioFeatures = result;
                 this.calculateMetrics();
+                this.processedTracks += 1;
             },
-            (error) => this.HttpClientErrorHandler(error)
+            (error) => {
+                this.HttpClientErrorHandler(error);
+                this.processedTracks += 1;
+            }
         );
     }
 
@@ -334,6 +354,8 @@ export class ExploreComponent implements OnInit {
                     errors.pipe(
                         delay(10000),
                         tap(errorStatus => {
+                            console.log(errorStatus.error.error.status);
+                            console.log(errorStatus);
                             console.log('Retrying...');
                         })
                     )
@@ -349,14 +371,14 @@ export class ExploreComponent implements OnInit {
                     errors.pipe(
                         delay(10000),
                         tap(errorStatus => {
+                            console.log(errorStatus.error.error.status);
+                            console.log(errorStatus);
                             console.log('Retrying...');
                         })
                     )
                 )
             );
 
-            
-        //.retryWhen((error) => { error.status == 429 ? return Observable.throw(error) : error.delay(500) });
     }
 
     // end - HttpClient Observables

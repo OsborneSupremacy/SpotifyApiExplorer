@@ -26,7 +26,7 @@
     <div class="col-sm-4">
         <div class="card">
             <div class="card-header">
-                Playlists
+                Playlists <span *ngIf="userPlaylists">({{ procesedPlaylists }} / {{ userPlaylists.items.length }})</span>
             </div>
             <div class="card-body">
                 <div class="scroll">
@@ -53,7 +53,7 @@
     <div class="col-sm-4">
         <div class="card">
             <div class="card-header">
-                Artists
+                Artists <span *ngIf="artists">({{ processedArtists }} / {{ artists.length }})</span>
             </div>
             <div class="card-body">
                 <div class="scroll">
@@ -118,7 +118,7 @@
     <div class="col-sm-8">
         <div class="card">
             <div class="card-header">
-                Audio Features
+                Audio Features <span *ngIf="tracks">({{ processedTracks }} / {{ tracks.length }})</span>
             </div>
             <div class="card-body">
                 <div>
@@ -165,7 +165,7 @@
         <div class="card-body">
             <p>{{ selectedMetric.Content }}</p>
 
-            <p>Average {{ selectedMetric.Title }} of {{spotifyUserName}}'s public playlists: {{ selectedMetric.Value | number:'1.2-2' }}</p>
+            <div class="alert alert-primary">Average {{ selectedMetric.Title }} of {{spotifyUserName}}'s public playlists: {{ selectedMetric.Value | number:'1.2-2' }}</div>
 
             <div class="imageFrame" style="" [ngStyle]="{'background-image':'url(/assets/images/' + (selectedMetric.Title | lowercase) + '.png)'}">
                 <div>
