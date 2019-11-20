@@ -14,6 +14,8 @@ export class ExploreComponent implements OnInit {
     // temporary
     spotifyUserName: string = "VisionsFugitive";
 
+    private token: Token;
+
     public userNotFound: boolean = false;
 
     public userPlaylists: UserPlaylists;
@@ -35,14 +37,18 @@ export class ExploreComponent implements OnInit {
 
     public metricsEnvelope: MetricEnvelope;
 
-    // track limit per playlist (100 is max and default)
-    private trackLimit: number = 100;
+    public limits: Limits;
 
     constructor(
         private http: HttpClient,
         @Inject('BASE_URL') private baseUrl: string,
         @Inject('SPOTIFY_BASE_URL') private apiBaseUrl: string
     ) {
+
+        this.limits = {
+            Playlists: 20,
+            Tracks: 100
+        };
 
         this.metricsEnvelope = <MetricEnvelope>{
             Populated: false,
@@ -159,6 +165,8 @@ export class ExploreComponent implements OnInit {
 
     public findUser() {
 
+        this.token = null;
+
         this.procesedPlaylists = 0;
         this.processedArtists = 0;
         this.processedTracks = 0;
@@ -171,7 +179,7 @@ export class ExploreComponent implements OnInit {
         this.genres = new Array();
         this.audioFeatures = new Array();
         this.metricsEnvelope.Populated = false;
-
+ 
         this.tokenRequester().subscribe(
             (result) => this.tokenReceived(result),
             (error) => this.HttpClientErrorHandler(error)
@@ -180,20 +188,21 @@ export class ExploreComponent implements OnInit {
     }
 
     private tokenReceived = (token: Token) => {
-        this.getUserPlaylists(token);
+        this.token = token;
+        this.getUserPlaylists();
     }
 
-    private userPlaylistsRetrieved = (token: Token, result: UserPlaylists) => {
+    private userPlaylistsRetrieved = (result: UserPlaylists) => {
         this.userPlaylists = result;
         this.userPlaylists.items.sort((a, b) => {
             return a.name >= b.name ? 1 : -1; // sort by name initially
         });
-        this.getPlayListMetadatum(token);
+        this.getPlayListMetadatum();
     }
 
-    private getUserPlaylists = (token: Token) => {
-        this.playListRequestor(token).subscribe(
-            (result) => this.userPlaylistsRetrieved(token, result),
+    private getUserPlaylists = () => {
+        this.playListRequestor().subscribe(
+            (result) => this.userPlaylistsRetrieved(result),
             (error) => {
                 if (this.HttpClientErrorHandler(error).NotFound)
                     this.userNotFound = true;
@@ -201,17 +210,17 @@ export class ExploreComponent implements OnInit {
         );
     }
 
-    private getPlayListMetadatum = (token: Token) => {
+    private getPlayListMetadatum = () => {
 
         for (let playlist of this.userPlaylists.items) {
             playlist.tracks = new Array();
-            this.playListMetaRequestor(token, playlist).subscribe(
+            this.playListMetaRequestor(playlist).subscribe(
                 (result) => {
-                    this.createTrackAndArtistLists(token, playlist, result.items);
+                    this.createTrackAndArtistLists(playlist, result.items);
                     this.procesedPlaylists += 1;
                     // once all playlists have been processed, get artist genres
                     if (this.procesedPlaylists >= this.userPlaylists.items.length)
-                        this.getArtistGenres(token);
+                        this.getArtistGenres();
                 },
                 (error) => {
                     this.HttpClientErrorHandler(error);
@@ -221,7 +230,7 @@ export class ExploreComponent implements OnInit {
         }
     }
 
-    private getArtistGenres = (token: Token) => {
+    private getArtistGenres = () => {
 
         for (let artist of this.artists) {
 
@@ -229,9 +238,8 @@ export class ExploreComponent implements OnInit {
                 this.processedArtists += 1;
                 continue; // skip artists without an ID
             }
-            
 
-            this.artistRequestor(token, artist).subscribe(
+            this.artistRequestor(artist).subscribe(
                 (result) => {
                     result.tracks = artist.tracks;
                     this.addArtistGenresToList(result);
@@ -266,7 +274,7 @@ export class ExploreComponent implements OnInit {
         }
     }
 
-    private createTrackAndArtistLists = (token: Token, playlist: PlayList, items: PlaylistTrackMeta[]) => {
+    private createTrackAndArtistLists = (playlist: PlayList, items: PlaylistTrackMeta[]) => {
         // loop through tracks, adding their artists to list
         for (let meta of items) {
             if (meta.track === null) continue; // occassionally a track's meta will not have a track
@@ -278,7 +286,7 @@ export class ExploreComponent implements OnInit {
                 this.processedTracks += 1;
                 continue;
             }
-            this.getAudioFeatures(token, meta.track)
+            this.getAudioFeatures(meta.track);
         }
         this.sortPlaylists();
         this.sortArtists();
@@ -299,8 +307,8 @@ export class ExploreComponent implements OnInit {
         }
     }
 
-    private getAudioFeatures = (token: Token, track: Track) => {
-        this.audioFeaturesRequestor(token, track).subscribe(
+    private getAudioFeatures = (track: Track) => {
+        this.audioFeaturesRequestor(track).subscribe(
             (result) => {
                 this.audioFeatures.push(result);
                 track.audioFeatures = result;
@@ -356,24 +364,24 @@ export class ExploreComponent implements OnInit {
             );
     }
 
-    private playListRequestor = (token: Token) => {
-        let url = `${this.apiBaseUrl}/users/${this.spotifyUserName}/playlists`;
-        return this.requestor<UserPlaylists>(token, url);
+    private playListRequestor = () => {
+        let url = `${this.apiBaseUrl}/users/${this.spotifyUserName}/playlists?limit=${this.limits.Playlists}`;
+        return this.requestor<UserPlaylists>(this.token, url);
     }
 
-    private playListMetaRequestor = (token: Token, playlist: PlayList) => {
-        let url = `${this.apiBaseUrl}/playlists/${playlist.id}/tracks?limit=${this.trackLimit}`;
-        return this.requestor<PlayListMeta>(token, url);
+    private playListMetaRequestor = (playlist: PlayList) => {
+        let url = `${this.apiBaseUrl}/playlists/${playlist.id}/tracks?limit=${this.limits.Tracks}`;
+        return this.requestor<PlayListMeta>(this.token, url);
     }
 
-    private artistRequestor = (token: Token, artist: Artist) => {
+    private artistRequestor = (artist: Artist) => {
         let url = `${this.apiBaseUrl}/artists/${artist.id}`;
-        return this.requestor<Artist>(token, url);
+        return this.requestor<Artist>(this.token, url);
     }
 
-    private audioFeaturesRequestor = (token: Token, track: Track) => {
+    private audioFeaturesRequestor = (track: Track) => {
         let url = `${this.apiBaseUrl}/audio-features/${track.id}`;
-        return this.requestor<AudioFeatures>(token, url);
+        return this.requestor<AudioFeatures>(this.token, url);
     }
     // end - HttpClient Observables
 
@@ -430,6 +438,11 @@ export class ExploreComponent implements OnInit {
 
 }
 
+class Limits {
+    Playlists = 20;
+    Tracks = 100;
+}
+
 class Metric {
     Title: string;
     Content: string;
@@ -470,7 +483,9 @@ class HttpClientError {
 
 }
 
-class Genre {
+class Genre { }
+
+interface Genre {
     name: string;
     artists: Artist[];
     tracks: Track[];
@@ -517,7 +532,9 @@ interface Artist {
     tracks: Track[];
 }
 
-class AudioFeatures {
+class AudioFeatures { }
+
+interface AudioFeatures {
     danceability: number;
     energy: number;
     key: number;
