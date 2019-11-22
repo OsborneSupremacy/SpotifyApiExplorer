@@ -6,6 +6,9 @@
         <button (click)="findUser()" class="btn btn-primary">
             Search
         </button>
+        <button (click)="stop = true" class="btn btn-danger">
+            Stop
+        </button>
     </div>
 </div>
 
@@ -27,7 +30,7 @@
         <div class="card">
             <div class="card-header">
                 Playlists <span *ngIf="userPlaylists">({{ procesedPlaylists }} / {{ userPlaylists.items.length }})</span>&nbsp;
-                <div *ngIf="(userPlaylists && (procesedPlaylists != userPlaylists.items.length))" class="spinner-border spinner-border-sm" role="status">
+                <div *ngIf="(!stop && userPlaylists && (procesedPlaylists != userPlaylists.items.length))" class="spinner-border spinner-border-sm" role="status">
                     <span class="sr-only">Loading...</span>
                 </div>
             </div>
@@ -57,7 +60,7 @@
         <div class="card">
             <div class="card-header">
                 Artists <span *ngIf="artists">({{ processedArtists }} / {{ artists.length }})</span>&nbsp;
-                <div *ngIf="(artists && (processedArtists != artists.length))" class="spinner-border spinner-border-sm" role="status">
+                <div *ngIf="(!stop && artists && (processedArtists != artists.length))" class="spinner-border spinner-border-sm" role="status">
                     <span class="sr-only">Loading...</span>
                 </div>
             </div>
@@ -125,7 +128,7 @@
         <div class="card">
             <div class="card-header">
                 Audio Features <span *ngIf="tracks">({{ processedTracks }} / {{ tracks.length }})</span>&nbsp;
-                <div *ngIf="(tracks && (processedTracks != tracks.length))" class="spinner-border spinner-border-sm" role="status">
+                <div *ngIf="(!stop && tracks && (processedTracks != tracks.length))" class="spinner-border spinner-border-sm" role="status">
                     <span class="sr-only">Loading...</span>
                 </div>
             </div>

@@ -15,6 +15,7 @@ export class ExploreComponent implements OnInit {
     spotifyUserName: string = "VisionsFugitive";
 
     private token: Token;
+    // check for token expiration
 
     public userNotFound: boolean = false;
 
@@ -38,6 +39,8 @@ export class ExploreComponent implements OnInit {
     public metricsEnvelope: MetricEnvelope;
 
     public limits: Limits;
+
+    public stop: boolean;
 
     constructor(
         private http: HttpClient,
@@ -165,6 +168,7 @@ export class ExploreComponent implements OnInit {
 
     public findUser() {
 
+        this.stop = false;
         this.token = null;
 
         this.procesedPlaylists = 0;
@@ -179,7 +183,7 @@ export class ExploreComponent implements OnInit {
         this.genres = new Array();
         this.audioFeatures = new Array();
         this.metricsEnvelope.Populated = false;
- 
+
         this.tokenRequester().subscribe(
             (result) => this.tokenReceived(result),
             (error) => this.HttpClientErrorHandler(error)
@@ -213,6 +217,7 @@ export class ExploreComponent implements OnInit {
     private getPlayListMetadatum = () => {
 
         for (let playlist of this.userPlaylists.items) {
+            if (this.stop) break;
             playlist.tracks = new Array();
             this.playListMetaRequestor(playlist).subscribe(
                 (result) => {
@@ -233,7 +238,7 @@ export class ExploreComponent implements OnInit {
     private getArtistGenres = () => {
 
         for (let artist of this.artists) {
-
+            if (this.stop) break;
             if (!artist.id) {
                 this.processedArtists += 1;
                 continue; // skip artists without an ID
@@ -255,6 +260,7 @@ export class ExploreComponent implements OnInit {
 
     private addArtistGenresToList(artist: Artist) {
         for (let genreName of artist.genres) {
+            if (this.stop) break;
             let selectedGenre = this.genres.find((g: Genre) => {
                 return genreName === g.name;
             });
@@ -277,6 +283,7 @@ export class ExploreComponent implements OnInit {
     private createTrackAndArtistLists = (playlist: PlayList, items: PlaylistTrackMeta[]) => {
         // loop through tracks, adding their artists to list
         for (let meta of items) {
+            if (this.stop) break;
             if (meta.track === null) continue; // occassionally a track's meta will not have a track
             playlist.tracks.push(meta.track);
             this.tracks.push(meta.track);
@@ -294,6 +301,7 @@ export class ExploreComponent implements OnInit {
 
     private addTrackArtistsToList = (track: Track) => {
         for (let artist of track.artists) {
+            if (this.stop) break;
             // add artist to list only if not already in list
             let existingArtist = this.artists.find((art: Artist) => {
                 return art.id === artist.id;
@@ -349,6 +357,7 @@ export class ExploreComponent implements OnInit {
 
     // create a httpGet function with a generic object to re-use for all of these
     private requestor<T>(token: Token, url: string) {
+        if (this.stop) return;
         return this.http.get<T>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } })
             .pipe(
                 retryWhen(errors =>
