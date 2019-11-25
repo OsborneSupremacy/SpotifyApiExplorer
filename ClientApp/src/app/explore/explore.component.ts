@@ -184,29 +184,34 @@ export class ExploreComponent implements OnInit {
         this.audioFeatures = new Array();
         this.metricsEnvelope.Populated = false;
 
-        this.tokenRequester().subscribe(
-            (result) => this.tokenReceived(result),
+        this.getToken(
+            () => this.getUserPlaylists(
+                () => this.getPlayListMetadatum(
+                    this.getArtistGenres
+                )
+            )
+        );
+    }
+
+    private getToken = (next: Function) => {
+        this.http.get<Token>(this.baseUrl + 'token').subscribe(
+            (result: Token) => {
+                this.token = result;
+                next();
+            },
             (error) => this.HttpClientErrorHandler(error)
         );
-
     }
 
-    private tokenReceived = (token: Token) => {
-        this.token = token;
-        this.getUserPlaylists();
-    }
-
-    private userPlaylistsRetrieved = (result: UserPlaylists) => {
-        this.userPlaylists = result;
-        this.userPlaylists.items.sort((a, b) => {
-            return a.name >= b.name ? 1 : -1; // sort by name initially
-        });
-        this.getPlayListMetadatum();
-    }
-
-    private getUserPlaylists = () => {
+    private getUserPlaylists = (next: Function) => {
         this.playListRequestor().subscribe(
-            (result) => this.userPlaylistsRetrieved(result),
+            (result: UserPlaylists) => {
+                this.userPlaylists = result;
+                this.userPlaylists.items.sort((a, b) => {
+                    return a.name >= b.name ? 1 : -1; // sort by name initially
+                });
+                next();
+            },
             (error) => {
                 if (this.HttpClientErrorHandler(error).NotFound)
                     this.userNotFound = true;
@@ -214,7 +219,7 @@ export class ExploreComponent implements OnInit {
         );
     }
 
-    private getPlayListMetadatum = () => {
+    private getPlayListMetadatum = (next: Function) => {
 
         for (let playlist of this.userPlaylists.items) {
             if (this.stop) break;
@@ -225,7 +230,7 @@ export class ExploreComponent implements OnInit {
                     this.procesedPlaylists += 1;
                     // once all playlists have been processed, get artist genres
                     if (this.procesedPlaylists >= this.userPlaylists.items.length)
-                        this.getArtistGenres();
+                        next();
                 },
                 (error) => {
                     this.HttpClientErrorHandler(error);
@@ -351,9 +356,7 @@ export class ExploreComponent implements OnInit {
     }
 
     // begin - HttpClient Observables
-    private tokenRequester = () => {
-        return this.http.get<Token>(this.baseUrl + 'token');
-    }
+
 
     // create a httpGet function with a generic object to re-use for all of these
     private requestor<T>(token: Token, url: string) {
