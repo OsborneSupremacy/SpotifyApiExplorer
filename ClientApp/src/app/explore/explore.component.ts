@@ -180,13 +180,14 @@ export class ExploreComponent implements OnInit {
         this.audioFeatures = new Array();
         this.metricsEnvelope.Populated = false;
 
-        this.getUserPlaylists(
+        this.userPlaylistsApiRequest(
             () => this.getPlayListMetadatum(
                 this.getArtistGenres
             )
         );
     }
 
+    // refactor this will callbacks
     private getToken = () : Observable<Token> => {
         return this.http.get<Token>(this.baseUrl + 'token');
     }
@@ -221,7 +222,7 @@ export class ExploreComponent implements OnInit {
         );
     }
 
-    private getUserPlaylists = (next: Function) => {
+    private userPlaylistsApiRequest = (next: Function) => {
 
         const url = `${this.apiBaseUrl}/users/${this.spotifyUserName}/playlists?limit=${this.limits.Playlists}`;
 
@@ -245,8 +246,11 @@ export class ExploreComponent implements OnInit {
         for (let playlist of this.userPlaylists.items) {
             if (this.stop) break;
             playlist.tracks = new Array();
-            this.playListMetaRequestor(playlist).subscribe(
-                (result) => {
+
+            let url = `${this.apiBaseUrl}/playlists/${playlist.id}/tracks?limit=${this.limits.Tracks}`;
+
+            this.spotifyApiRequest<PlayListMeta>(url,
+                (result: PlayListMeta) => {
                     this.createTrackAndArtistLists(playlist, result.items);
                     this.procesedPlaylists += 1;
                     // once all playlists have been processed, get artist genres
@@ -258,6 +262,7 @@ export class ExploreComponent implements OnInit {
                     this.procesedPlaylists += 1;
                 }
             );
+
         }
     }
 
@@ -265,13 +270,16 @@ export class ExploreComponent implements OnInit {
 
         for (let artist of this.artists) {
             if (this.stop) break;
+
             if (!artist.id) {
                 this.processedArtists += 1;
                 continue; // skip artists without an ID
             }
 
-            this.artistRequestor(artist).subscribe(
-                (result) => {
+            let url = `${this.apiBaseUrl}/artists/${artist.id}`;
+
+            this.spotifyApiRequest<Artist>(url,
+                (result: Artist) => {
                     result.tracks = artist.tracks;
                     this.addArtistGenresToList(result);
                     this.processedArtists += 1;
@@ -342,8 +350,11 @@ export class ExploreComponent implements OnInit {
     }
 
     private getAudioFeatures = (track: Track) => {
-        this.audioFeaturesRequestor(track).subscribe(
-            (result) => {
+
+        let url = `${this.apiBaseUrl}/audio-features/${track.id}`;
+
+        this.spotifyApiRequest<AudioFeatures>(url,
+            (result: AudioFeatures) => {
                 this.audioFeatures.push(result);
                 track.audioFeatures = result;
                 this.calculateMetrics();
@@ -357,6 +368,7 @@ export class ExploreComponent implements OnInit {
     }
 
     private calculateMetrics = () => {
+
         this.metricsEnvelope.Populated = true;
         this.metricsEnvelope.Danceability.Value = this.calcAverage(this.audioFeatures.map(a => a.danceability));
         this.metricsEnvelope.Energy.Value = this.calcAverage(this.audioFeatures.map(a => a.energy));
@@ -375,49 +387,6 @@ export class ExploreComponent implements OnInit {
             metric.MarkerPercentage = mp * 100.0;
         }
     }
-
-    // begin - HttpClient Observables
-    private requestor<T>(url: string) : Observable<T> {
-        if (this.stop) return;
-
-        this.getToken().subscribe(
-            (token: Token) => {
-                return this.http.get<T>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } })
-                    .pipe(
-                        retryWhen(errors =>
-                            errors.pipe(
-                                delay(10000),
-                                tap(errorStatus => {
-                                    console.log(errorStatus.error.error.status);
-                                    console.log(errorStatus);
-                                    console.log('Retrying...');
-                                })
-                            )
-                        )
-                    );
-            },
-            () => {
-                console.log('Error getting token');
-            }
-        );
-    }
-
-
-    private playListMetaRequestor = (playlist: PlayList) => {
-        let url = `${this.apiBaseUrl}/playlists/${playlist.id}/tracks?limit=${this.limits.Tracks}`;
-        return this.requestor<PlayListMeta>(url);
-    }
-
-    private artistRequestor = (artist: Artist) => {
-        let url = `${this.apiBaseUrl}/artists/${artist.id}`;
-        return this.requestor<Artist>(url);
-    }
-
-    private audioFeaturesRequestor = (track: Track) => {
-        let url = `${this.apiBaseUrl}/audio-features/${track.id}`;
-        return this.requestor<AudioFeatures>(url);
-    }
-    // end - HttpClient Observables
 
 
     // begin - utility functions
