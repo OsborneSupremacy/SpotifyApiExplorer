@@ -188,38 +188,44 @@ export class ExploreComponent implements OnInit {
     }
 
     // refactor this will callbacks
-    private getToken = () : Observable<Token> => {
-        return this.http.get<Token>(this.baseUrl + 'token');
+    private getToken = (validConsumer: Function): Observable<Token> => {
+
+        if (this.stop) return;
+
+        this.http.get<Token>(this.baseUrl + 'token').subscribe(
+            (token: Token) => {
+                validConsumer(token);
+            },
+            () => {
+                console.log('Error getting token');
+            }
+        );
+
     }
 
     private spotifyApiRequest = <T>(url: string, validConsumer: Function, errorConsumer: Function) => {
 
         if (this.stop) return;
 
-        this.getToken().subscribe(
-            (token: Token) => {
-                return this.http.get<T>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } })
-                    .pipe(
-                        retryWhen(errors =>
-                            errors.pipe(
-                                delay(10000),
-                                tap(errorStatus => {
-                                    console.log(errorStatus.error.error.status);
-                                    console.log(errorStatus);
-                                    console.log('Retrying...');
-                                })
-                            )
+        this.getToken((token: Token) => {
+            return this.http.get<T>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } })
+                .pipe(
+                    retryWhen(errors =>
+                        errors.pipe(
+                            delay(10000),
+                            tap(errorStatus => {
+                                console.log(errorStatus.error.error.status);
+                                console.log(errorStatus);
+                                console.log('Retrying...');
+                            })
                         )
                     )
-                    .subscribe(
-                        (result: T) => validConsumer(result),
-                        (error) => errorConsumer(error)
-                    );
-            },
-            () => {
-                console.log('Error getting token');
-            }
-        );
+                )
+                .subscribe(
+                    (result: T) => validConsumer(result),
+                    (error) => errorConsumer(error)
+                );
+        });
     }
 
     private userPlaylistsApiRequest = (next: Function) => {
