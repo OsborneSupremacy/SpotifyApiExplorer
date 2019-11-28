@@ -3,6 +3,17 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { EMPTY, Observable } from 'rxjs';
 import { catchError, retry, retryWhen, delay, take, tap } from 'rxjs/operators';
 import { Type } from '@angular/compiler';
+import { UserPlaylists } from '../spotify/userplaylists';
+import { Track } from '../spotify/track';
+import { AudioFeatures } from '../spotify/audiofeatures';
+import { Artist } from '../spotify/artist';
+import { Genre } from '../spotify/genre';
+import { Metric } from '../spotify/metric';
+import { MetricEnvelope } from '../spotify/metricenvelope';
+import { Playlist } from '../spotify/playlist';
+import { PlaylistMeta } from '../spotify/playlistmeta';
+import { PlaylistTrackMeta } from '../spotify/playlisttrackmeta';
+import { Token } from '../spotify/token';
 
 @Component({
     selector: 'app-explore',
@@ -255,8 +266,8 @@ export class ExploreComponent implements OnInit {
 
             let url = `${this.apiBaseUrl}/playlists/${playlist.id}/tracks?limit=${this.limits.Tracks}`;
 
-            this.spotifyApiRequest<PlayListMeta>(url,
-                (result: PlayListMeta) => {
+            this.spotifyApiRequest<PlaylistMeta>(url,
+                (result: PlaylistMeta) => {
                     this.createTrackAndArtistLists(playlist, result.items);
                     this.procesedPlaylists += 1;
                     // once all playlists have been processed, get artist genres
@@ -320,7 +331,7 @@ export class ExploreComponent implements OnInit {
         }
     }
 
-    private createTrackAndArtistLists = (playlist: PlayList, items: PlaylistTrackMeta[]) => {
+    private createTrackAndArtistLists = (playlist: Playlist, items: PlaylistTrackMeta[]) => {
         // loop through tracks, adding their artists to list
         for (let meta of items) {
             if (this.stop) break;
@@ -452,32 +463,6 @@ class Limits {
     Tracks = 100;
 }
 
-class Metric {
-    Title: string;
-    Content: string;
-    ImageFile: string;
-    Unit: string;
-    Min: number;
-    Max: number;
-    NominalMin: number;
-    NominalMax: number;
-    Value: number;
-    MarkerPercentage: number;
-}
-
-class MetricEnvelope {
-    Populated: boolean;
-    Danceability: Metric;
-    Energy: Metric;
-    Loudness: Metric;
-    Valence: Metric;
-    Speechiness: Metric;
-    Acousticness: Metric;
-    Instrumentalness: Metric;
-    Liveness: Metric;
-    Tempo: Metric;
-}
-
 class HttpClientError {
 
     NotFound: boolean;
@@ -490,79 +475,4 @@ class HttpClientError {
         this.Unexpected = false;
     }
 
-}
-
-class Genre { }
-
-interface Genre {
-    name: string;
-    artists: Artist[];
-    tracks: Track[];
-}
-
-interface UserPlaylists {
-    items: PlayList[];
-}
-
-interface PlayList {
-    id: string;
-    name: string;
-    tracks: Track[];
-}
-
-interface PlayListMeta {
-    items: PlaylistTrackMeta[];
-}
-
-interface PlaylistTrackMeta {
-    track: Track;
-}
-
-interface Track {
-    id: string;
-    name: string;
-    popularity: number;
-    album: Album;
-    audioFeatures: AudioFeatures;
-    artists: Artist[];
-}
-
-interface Album {
-    id: string;
-    name: string;
-    release_date: string;
-    artists: Artist[];
-}
-
-interface Artist {
-    id: string;
-    name: string;
-    genres: string[];
-    tracks: Track[];
-}
-
-class AudioFeatures { }
-
-interface AudioFeatures {
-    danceability: number;
-    energy: number;
-    key: number;
-    loudness: number;
-    mode: number;
-    speechiness: number;
-    acousticness: number;
-    instrumentalness: number;
-    liveness: number;
-    valence: number;
-    tempo: number;
-    duration_ms: number;
-    time_signature: number;
-    id: string;
-}
-
-interface Token {
-    access_token: string;
-    token_type: string;
-    expires_in: number;
-    scope: string;
 }
