@@ -144,7 +144,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let metric of metrics">
+                            <tr *ngFor="let metric of metricsEnvelope.GetList()">
                                 <td>
                                     <span style="cursor: pointer" href="#" class="badge badge-info" (click)="selectMetric(metric)">ℹ️</span>
                                     {{ metric.Title }}
@@ -192,6 +192,6 @@
 
 <!--pre-load images. yeah, this is not the best way of doing this.-->
 <div style="display: none">
-    <img *ngFor="let metric of metrics" src="/assets/images/{{ metric.Title | lowercase }}.png" />
+    <img *ngFor="let metric of metricsEnvelope.GetList()" src="/assets/images/{{ metric.Title | lowercase }}.png" />
 </div>
 
