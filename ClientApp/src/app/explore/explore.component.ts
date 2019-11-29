@@ -2,18 +2,7 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { EMPTY, Observable } from 'rxjs';
 import { catchError, retry, retryWhen, delay, take, tap } from 'rxjs/operators';
-import { Type } from '@angular/compiler';
-import { UserPlaylists } from '../spotify/userplaylists';
-import { Track } from '../spotify/track';
-import { AudioFeatures } from '../spotify/audiofeatures';
-import { Artist } from '../spotify/artist';
-import { Genre } from '../spotify/genre';
-import { Metric } from '../spotify/metric';
-import { MetricEnvelope } from '../spotify/metricenvelope';
-import { Playlist } from '../spotify/playlist';
-import { PlaylistMeta } from '../spotify/playlistmeta';
-import { PlaylistTrackMeta } from '../spotify/playlisttrackmeta';
-import { Token } from '../spotify/token';
+import { UserPlaylists, Track, AudioFeatures, Artist, Genre, Metric, MetricEnvelope, Playlist, PlaylistMeta, PlaylistTrackMeta, Token } from '../spotify/';
 
 @Component({
     selector: 'app-explore',
