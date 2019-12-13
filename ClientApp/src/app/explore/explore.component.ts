@@ -52,10 +52,10 @@ export class ExploreComponent implements OnInit {
 
     }
 
-    ngOnInit() {
+    ngOnInit = () => {
     }
 
-    public findUser() {
+    public findUser = () => {
 
         this.stop = false;
 
