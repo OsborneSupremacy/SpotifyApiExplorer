@@ -1,8 +1,7 @@
 import { Injectable, Inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, retry, retryWhen, delay, take, tap } from 'rxjs/operators';
-import { Observable } from 'rxjs';
-import { UserPlaylists, Track, AudioFeatures, Artist, Genre, Metric, MetricEnvelope, Playlist, PlaylistMeta, PlaylistTrackMeta, Token } from './spotify/';
+import { HttpClient } from '@angular/common/http';
+import { retryWhen, delay, tap } from 'rxjs/operators';
+import { Token } from './spotify/';
 
 @Injectable({
   providedIn: 'root'

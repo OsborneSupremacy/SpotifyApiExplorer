@@ -1,8 +1,5 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { EMPTY, Observable } from 'rxjs';
-import { catchError, retry, retryWhen, delay, take, tap } from 'rxjs/operators';
-import { UserPlaylists, Track, AudioFeatures, Artist, Genre, Metric, MetricEnvelope, Playlist, PlaylistMeta, PlaylistTrackMeta, Token } from '../spotify/';
+import { UserPlaylists, Track, AudioFeatures, Artist, Genre, Metric, MetricEnvelope, Playlist, PlaylistMeta, PlaylistTrackMeta } from '../spotify/';
 import { SpotifyService } from '../spotify.service';
 
 @Component({
@@ -37,9 +34,7 @@ export class ExploreComponent implements OnInit {
     public limits: Limits;
 
     constructor(
-        private http: HttpClient,
-        private spotifyService: SpotifyService,
-        @Inject('BASE_URL') private baseUrl: string
+        private spotifyService: SpotifyService
     ) {
 
         this.limits = {
