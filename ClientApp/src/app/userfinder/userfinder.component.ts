@@ -9,6 +9,8 @@ import { SpotifyService } from '../spotify.service';
 })
 export class UserfinderComponent implements OnInit {
 
+    public keyword: string;
+
     constructor(private spotifyService: SpotifyService) {
 
 
