@@ -134,7 +134,7 @@ export class ExploreComponent implements OnInit {
                 continue; // skip artists without an ID
             }
 
-            const url = `$artists/${artist.id}`;
+            const url = `artists/${artist.id}`;
 
             this.spotifyService.apiRequest<Artist>(url,
                 (result: Artist) => {
