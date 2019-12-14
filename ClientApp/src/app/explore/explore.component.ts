@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { UserPlaylists, Track, AudioFeatures, Artist, Genre, Metric, MetricEnvelope, Playlist, PlaylistMeta, PlaylistTrackMeta } from '../spotify/';
 import { SpotifyService } from '../spotify.service';
 
@@ -33,9 +33,9 @@ export class ExploreComponent implements OnInit {
 
     public limits: Limits;
 
-    constructor(
-        private spotifyService: SpotifyService
-    ) {
+    public stop = this.spotifyService.stop;
+
+    constructor(private spotifyService: SpotifyService) {
 
         this.limits = {
             Playlists: 20,

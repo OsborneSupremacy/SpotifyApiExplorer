@@ -1,5 +1,6 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
+import { UserPlaylists, Track, AudioFeatures, Artist, Genre, Metric, MetricEnvelope, Playlist, PlaylistMeta, PlaylistTrackMeta } from '../spotify/';
+import { SpotifyService } from '../spotify.service';
 
 @Component({
     selector: 'app-userfinder',
@@ -8,11 +9,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 })
 export class UserfinderComponent implements OnInit {
 
-    constructor(
-        private http: HttpClient,
-        @Inject('BASE_URL') private baseUrl: string,
-        @Inject('SPOTIFY_BASE_URL') private apiBaseUrl: string
-    ) {
+    constructor(private spotifyService: SpotifyService) {
 
 
     }
