@@ -3,18 +3,22 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
+import { SpotifyService } from './app/spotify.service';
 
-export function getBaseUrl() {
-    return document.getElementsByTagName('base')[0].href;
-}
-
-export var getSpotifyBaseUrl = (): string => {
-    return `https://api.spotify.com/v1`;
-};
 
 const providers = [
-    { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] },
-    { provide: 'SPOTIFY_BASE_URL', useFactory: getSpotifyBaseUrl, deps: [] }
+    {
+        provide: 'BASE_URL',
+        useFactory: () => { return document.getElementsByTagName('base')[0].href; }, deps: []
+    },
+    {
+        provide: 'SPOTIFY_BASE_URL',
+        useValue: `https://api.spotify.com/v1`, deps: []
+    },
+    {
+        provide: SpotifyService,
+        useClass: SpotifyService, deps: []
+    }
 ];
 
 if (environment.production) {

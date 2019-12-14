@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { EMPTY, Observable } from 'rxjs';
 import { catchError, retry, retryWhen, delay, take, tap } from 'rxjs/operators';
 import { UserPlaylists, Track, AudioFeatures, Artist, Genre, Metric, MetricEnvelope, Playlist, PlaylistMeta, PlaylistTrackMeta, Token } from '../spotify/';
+import { SpotifyService } from '../spotify.service';
 
 @Component({
     selector: 'app-explore',
@@ -35,12 +36,10 @@ export class ExploreComponent implements OnInit {
 
     public limits: Limits;
 
-    public stop: boolean;
-
     constructor(
         private http: HttpClient,
-        @Inject('BASE_URL') private baseUrl: string,
-        @Inject('SPOTIFY_BASE_URL') private apiBaseUrl: string
+        private spotifyService: SpotifyService,
+        @Inject('BASE_URL') private baseUrl: string
     ) {
 
         this.limits = {
@@ -55,9 +54,11 @@ export class ExploreComponent implements OnInit {
     ngOnInit = () => {
     }
 
+    // add reset feature
+
     public findUser = () => {
 
-        this.stop = false;
+        this.spotifyService.stop = false;
 
         this.procesedPlaylists = 0;
         this.processedArtists = 0;
@@ -79,51 +80,11 @@ export class ExploreComponent implements OnInit {
         );
     }
 
-    private getToken = (validConsumer: Function): Observable<Token> => {
-
-        if (this.stop) return;
-
-        this.http.get<Token>(this.baseUrl + 'token').subscribe(
-            (token: Token) => {
-                validConsumer(token);
-            },
-            () => {
-                console.log('Error getting token');
-            }
-        );
-
-    }
-
-    private spotifyApiRequest = <T>(url: string, validConsumer: Function, errorConsumer: Function) => {
-
-        if (this.stop) return;
-
-        this.getToken((token: Token) => {
-            return this.http.get<T>(url, { headers: { 'Authorization': 'Bearer ' + token.access_token } })
-                .pipe(
-                    retryWhen(errors =>
-                        errors.pipe(
-                            delay(10000),
-                            tap(errorStatus => {
-                                console.log(errorStatus.error.error.status);
-                                console.log(errorStatus);
-                                console.log('Retrying...');
-                            })
-                        )
-                    )
-                )
-                .subscribe(
-                    (result: T) => validConsumer(result),
-                    (error) => errorConsumer(error)
-                );
-        });
-    }
-
     private userPlaylistsApiRequest = (next: Function) => {
 
-        const url = `${this.apiBaseUrl}/users/${this.spotifyUserName}/playlists?limit=${this.limits.Playlists}`;
+        const url = `users/${this.spotifyUserName}/playlists?limit=${this.limits.Playlists}`;
 
-        this.spotifyApiRequest<UserPlaylists>(url,
+        this.spotifyService.apiRequest<UserPlaylists>(url,
             (result: UserPlaylists) => {
                 this.userPlaylists = result;
                 this.userPlaylists.items.sort((a, b) => {
@@ -141,12 +102,12 @@ export class ExploreComponent implements OnInit {
     private getPlayListMetadatum = (next: Function) => {
 
         for (let playlist of this.userPlaylists.items) {
-            if (this.stop) break;
+            if (this.spotifyService.stop) break;
             playlist.tracks = new Array();
 
-            let url = `${this.apiBaseUrl}/playlists/${playlist.id}/tracks?limit=${this.limits.Tracks}`;
+            let url = `playlists/${playlist.id}/tracks?limit=${this.limits.Tracks}`;
 
-            this.spotifyApiRequest<PlaylistMeta>(url,
+            this.spotifyService.apiRequest<PlaylistMeta>(url,
                 (result: PlaylistMeta) => {
                     this.createTrackAndArtistLists(playlist, result.items);
                     this.procesedPlaylists += 1;
@@ -166,16 +127,16 @@ export class ExploreComponent implements OnInit {
     private getArtistGenres = () => {
 
         for (let artist of this.artists) {
-            if (this.stop) break;
+            if (this.spotifyService.stop) break;
 
             if (!artist.id) {
                 this.processedArtists += 1;
                 continue; // skip artists without an ID
             }
 
-            let url = `${this.apiBaseUrl}/artists/${artist.id}`;
+            const url = `$artists/${artist.id}`;
 
-            this.spotifyApiRequest<Artist>(url,
+            this.spotifyService.apiRequest<Artist>(url,
                 (result: Artist) => {
                     result.tracks = artist.tracks;
                     this.addArtistGenresToList(result);
@@ -191,7 +152,7 @@ export class ExploreComponent implements OnInit {
 
     private addArtistGenresToList = (artist: Artist) => {
         for (let genreName of artist.genres) {
-            if (this.stop) break;
+            if (this.spotifyService.stop) break;
             let selectedGenre = this.genres.find((g: Genre) => {
                 return genreName === g.name;
             });
@@ -214,7 +175,7 @@ export class ExploreComponent implements OnInit {
     private createTrackAndArtistLists = (playlist: Playlist, items: PlaylistTrackMeta[]) => {
         // loop through tracks, adding their artists to list
         for (let meta of items) {
-            if (this.stop) break;
+            if (this.spotifyService.stop) break;
             if (meta.track === null) continue; // occassionally a track's meta will not have a track
             playlist.tracks.push(meta.track);
             this.tracks.push(meta.track);
@@ -232,7 +193,7 @@ export class ExploreComponent implements OnInit {
 
     private addTrackArtistsToList = (track: Track) => {
         for (let artist of track.artists) {
-            if (this.stop) break;
+            if (this.spotifyService.stop) break;
             // add artist to list only if not already in list
             let existingArtist = this.artists.find((art: Artist) => {
                 return art.id === artist.id;
@@ -248,9 +209,9 @@ export class ExploreComponent implements OnInit {
 
     private getAudioFeatures = (track: Track) => {
 
-        let url = `${this.apiBaseUrl}/audio-features/${track.id}`;
+        const url = `audio-features/${track.id}`;
 
-        this.spotifyApiRequest<AudioFeatures>(url,
+        this.spotifyService.apiRequest<AudioFeatures>(url,
             (result: AudioFeatures) => {
                 this.audioFeatures.push(result);
                 track.audioFeatures = result;
