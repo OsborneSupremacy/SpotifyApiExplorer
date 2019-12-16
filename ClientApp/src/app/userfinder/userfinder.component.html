@@ -26,7 +26,7 @@
             </div>
             <div class="card-body">
                 <div>
-                    <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="playlists" >
+                    <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="playlists && !noPlaylistsFound" >
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -43,6 +43,9 @@
                                     {{ playlist.owner.display_name }}
                                 </td>
                                 <td>
+                                    <button (click)="selectUser(playlist.owner.id)" class="btn btn-primary btn-sm">
+                                        Select
+                                    </button>
                                     {{ playlist.owner.id }}
                                 </td>
                             </tr>

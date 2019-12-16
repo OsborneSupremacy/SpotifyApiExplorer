@@ -12,6 +12,8 @@ export class SpotifyService {
 
     public stop: boolean;
 
+    public username: string;
+
     constructor(
         private http: HttpClient,
         @Inject('BASE_URL') private baseUrl: string) {
@@ -35,6 +37,7 @@ export class SpotifyService {
 
         if (this.stop) return;
 
+        // need to update this to not retry on 404
         this.getToken((token: Token) => {
             return this.http.get<T>(`${this.apiBaseUrl}/${subUrl}`, { headers: { 'Authorization': 'Bearer ' + token.access_token } })
                 .pipe(

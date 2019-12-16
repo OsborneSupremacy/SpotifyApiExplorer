@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { SearchResult, Playlist } from '../spotify/';
 import { SpotifyService } from '../spotify.service';
 
@@ -15,8 +16,9 @@ export class UserfinderComponent implements OnInit {
 
     public noPlaylistsFound: boolean;
 
-    constructor(private spotifyService: SpotifyService) {
-
+    constructor(
+        private router: Router,
+        private spotifyService: SpotifyService) {
 
     }
 
@@ -26,10 +28,17 @@ export class UserfinderComponent implements OnInit {
     public findUsers = () => {
 
         this.spotifyService.stop = false;
+
+        this.playlists = null;
         this.noPlaylistsFound = false;
 
         this.playlistSearch();
 
+    }
+
+    public selectUser = (selectedUsername: string) => {
+        this.spotifyService.username = selectedUsername;
+        this.router.navigate(['/', 'explore']);
     }
 
     private playlistSearch = () => {
@@ -38,9 +47,9 @@ export class UserfinderComponent implements OnInit {
 
         this.spotifyService.apiRequest<SearchResult>(url,
             (result: SearchResult) => {
-
                 this.playlists = result.playlists.items;
-
+                if (this.playlists.length === 0)
+                    this.noPlaylistsFound = true;
             },
             (error) => {
                 if (this.spotifyService.HttpClientErrorHandler(error).NotFound)

@@ -10,7 +10,7 @@ import { SpotifyService } from '../spotify.service';
 export class ExploreComponent implements OnInit {
 
     // temporary
-    spotifyUserName: string = "VisionsFugitive";
+    spotifyUserName = this.spotifyService.username;
 
     public userNotFound: boolean = false;
 
