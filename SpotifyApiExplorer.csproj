@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -37,14 +37,11 @@
 
   <ItemGroup>
     <None Remove="ClientApp\src\app\spotify\index.ts" />
+    <None Remove="ClientApp\src\app\spotify\user.ts" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="ClientApp\src\assets\images\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <TypeScriptCompile Include="ClientApp\src\app\spotify\index.ts" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

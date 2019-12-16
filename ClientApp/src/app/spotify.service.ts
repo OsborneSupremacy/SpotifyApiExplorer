@@ -56,5 +56,28 @@ export class SpotifyService {
         });
     }
 
+    public HttpClientErrorHandler = (error: any) => {
+        let hce = new HttpClientError();
+        if (error.status === 404) {
+            hce.NotFound = true;
+            return hce;
+        }
+        console.log('Unhandled error', error);
+        hce.Unexpected = true;
+        return hce;
+    };
 }
 
+class HttpClientError {
+
+    NotFound: boolean;
+    RateLimit: boolean;
+    Unexpected: boolean;
+
+    constructor() {
+        this.NotFound = false;
+        this.RateLimit = false;
+        this.Unexpected = false;
+    }
+
+}

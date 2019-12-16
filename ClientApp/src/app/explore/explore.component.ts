@@ -88,7 +88,7 @@ export class ExploreComponent implements OnInit {
                 next();
             },
             (error) => {
-                if (this.HttpClientErrorHandler(error).NotFound)
+                if (this.spotifyService.HttpClientErrorHandler(error).NotFound)
                     this.userNotFound = true;
             }
         );
@@ -111,7 +111,7 @@ export class ExploreComponent implements OnInit {
                         next();
                 },
                 (error) => {
-                    this.HttpClientErrorHandler(error);
+                    this.spotifyService.HttpClientErrorHandler(error);
                     this.procesedPlaylists += 1;
                 }
             );
@@ -138,7 +138,7 @@ export class ExploreComponent implements OnInit {
                     this.processedArtists += 1;
                 },
                 (error) => {
-                    this.HttpClientErrorHandler(error);
+                    this.spotifyService.HttpClientErrorHandler(error);
                     this.processedArtists += 1;
                 }
             );
@@ -214,7 +214,7 @@ export class ExploreComponent implements OnInit {
                 this.processedTracks += 1;
             },
             (error) => {
-                this.HttpClientErrorHandler(error);
+                this.spotifyService.HttpClientErrorHandler(error);
                 this.processedTracks += 1;
             }
         );
@@ -252,18 +252,6 @@ export class ExploreComponent implements OnInit {
         });
     }
 
-    private HttpClientErrorHandler = (error: any) => {
-        let hce = new HttpClientError();
-        if (error.status === 404) {
-            hce.NotFound = true;
-            return hce;
-        }
-        console.log('Unhandled error', error);
-        hce.Unexpected = true;
-        return hce;
-    };
-
-
     public closeMetricsDialog = () => {
         this.selectedMetric = null;
     };
@@ -280,16 +268,3 @@ class Limits {
     Tracks = 100;
 }
 
-class HttpClientError {
-
-    NotFound: boolean;
-    RateLimit: boolean;
-    Unexpected: boolean;
-
-    constructor() {
-        this.NotFound = false;
-        this.RateLimit = false;
-        this.Unexpected = false;
-    }
-
-}

@@ -1,10 +1,57 @@
 
+<p>Find a Spotify user by searching public playlists. Provide a keyword to search playlists with.</p>
+
 <div class="input-group mb-3" style="width: 500px;">
     <input [(ngModel)]="keyword" type="text" placeholder="Enter a Keyword" class="form-control" />
     <div class="input-group-append">
         <button (click)="findUsers()" class="btn btn-primary">
             Search
         </button>
+    </div>
+</div>
+
+<p>&nbsp;</p>
+
+<h5 *ngIf="noPlaylistsFound" class="alert alert-danger" role="alert">
+    No playlists found with a keyword of {{keyword}}.
+</h5>
+
+<div class="row" >
+
+    <div class="col-sm-8">
+
+        <div class="card">
+            <div class="card-header">
+                Playlists
+            </div>
+            <div class="card-body">
+                <div>
+                    <table class='table table-striped' aria-labelledby="tableLabel" *ngIf="playlists" >
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Owner Display Name</th>
+                                <th>Owner Username</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let playlist of playlists">
+                                <td>
+                                    {{ playlist.name }}
+                                </td>     
+                                <td>
+                                    {{ playlist.owner.display_name }}
+                                </td>
+                                <td>
+                                    {{ playlist.owner.id }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
