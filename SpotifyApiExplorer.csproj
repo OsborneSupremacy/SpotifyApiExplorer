@@ -36,11 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="ClientApp\src\app\spotify\index.ts" />
-    <None Remove="ClientApp\src\app\spotify\user.ts" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="ClientApp\src\assets\images\" />
   </ItemGroup>
 
