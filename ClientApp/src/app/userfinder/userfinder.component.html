@@ -2,7 +2,7 @@
 <p>Find a Spotify user by searching public playlists. Provide a keyword to search playlists with.</p>
 
 <div class="input-group mb-3" style="width: 500px;">
-    <input [(ngModel)]="keyword" type="text" placeholder="Enter a Keyword" class="form-control" />
+    <input [(ngModel)]="keyword" (keyup.enter)="findUsers()" type="text" placeholder="Enter a Keyword" class="form-control" />
     <div class="input-group-append">
         <button (click)="findUsers()" class="btn btn-primary">
             Search
@@ -30,6 +30,7 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
+                                <th>Track Count</th>
                                 <th>Owner Display Name</th>
                                 <th>Owner Username</th>
                             </tr>
@@ -38,7 +39,10 @@
                             <tr *ngFor="let playlist of playlists">
                                 <td>
                                     {{ playlist.name }}
-                                </td>     
+                                </td>
+                                <td>
+                                    {{ playlist.tracks.total }}
+                                </td>
                                 <td>
                                     {{ playlist.owner.display_name }}
                                 </td>

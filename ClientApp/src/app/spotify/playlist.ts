@@ -4,6 +4,11 @@ import { User } from "./user";
 export class Playlist {
     id: string;
     name: string;
-    tracks: Track[];
+    tracks: {
+        href: string;
+        total: number;
+    }
+    // populated by app; not returned by Spotify
+    foundtracks: Track[];
     owner: User;
 }

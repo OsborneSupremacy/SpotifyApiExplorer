@@ -7,6 +7,5 @@ export { Metric } from './metric';
 export { MetricEnvelope } from './metricenvelope';
 export { Playlist } from './playlist';
 export { PlaylistMeta } from './playlistmeta';
-export { PlaylistTrackMeta } from './playlisttrackmeta';
 export { SearchResult } from './searchresult';
 export { Token } from './token';

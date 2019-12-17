@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UserPlaylists, Track, AudioFeatures, Artist, Genre, Metric, MetricEnvelope, Playlist, PlaylistMeta, PlaylistTrackMeta } from '../spotify/';
+import { UserPlaylists, Track, AudioFeatures, Artist, Genre, Metric, MetricEnvelope, Playlist, PlaylistMeta } from '../spotify/';
 import { SpotifyService } from '../spotify.service';
 
 @Component({
@@ -9,7 +9,6 @@ import { SpotifyService } from '../spotify.service';
 })
 export class ExploreComponent implements OnInit {
 
-    // temporary
     spotifyUserName = this.spotifyService.username;
 
     public userNotFound: boolean = false;
@@ -98,13 +97,13 @@ export class ExploreComponent implements OnInit {
 
         for (let playlist of this.userPlaylists.items) {
             if (this.spotifyService.stop) break;
-            playlist.tracks = new Array();
+            playlist.foundtracks = new Array();
 
             let url = `playlists/${playlist.id}/tracks?limit=${this.limits.Tracks}`;
 
             this.spotifyService.apiRequest<PlaylistMeta>(url,
                 (result: PlaylistMeta) => {
-                    this.createTrackAndArtistLists(playlist, result.items);
+                    this.createTrackAndArtistLists(playlist, result);
                     this.procesedPlaylists += 1;
                     // once all playlists have been processed, get artist genres
                     if (this.procesedPlaylists >= this.userPlaylists.items.length)
@@ -167,20 +166,20 @@ export class ExploreComponent implements OnInit {
         }
     }
 
-    private createTrackAndArtistLists = (playlist: Playlist, items: PlaylistTrackMeta[]) => {
+    private createTrackAndArtistLists = (playlist: Playlist, playlistMeta: PlaylistMeta) => {
         // loop through tracks, adding their artists to list
-        for (let meta of items) {
+        for (let trackMeta of playlistMeta.items) {
             if (this.spotifyService.stop) break;
-            if (meta.track === null) continue; // occassionally a track's meta will not have a track
-            playlist.tracks.push(meta.track);
-            this.tracks.push(meta.track);
-            this.addTrackArtistsToList(meta.track);
+            if (trackMeta.track === null) continue; // occassionally a track's meta will not have a track
+            playlist.foundtracks.push(trackMeta.track);
+            this.tracks.push(trackMeta.track);
+            this.addTrackArtistsToList(trackMeta.track);
 
-            if (meta.track.id === null) {
+            if (trackMeta.track.id === null) {
                 this.processedTracks += 1;
                 continue;
             }
-            this.getAudioFeatures(meta.track);
+            this.getAudioFeatures(trackMeta.track);
         }
         this.sortPlaylists();
         this.sortArtists();
@@ -227,10 +226,10 @@ export class ExploreComponent implements OnInit {
     // begin - utility functions
     private sortPlaylists = () => {
         this.userPlaylists.items.sort((a, b) => {
-            if (a.tracks.length === b.tracks.length)
+            if (a.foundtracks.length === b.foundtracks.length)
                 return a.name >= b.name ? 1 : -1;
             else
-                return b.tracks.length >= a.tracks.length ? 1 : -1;
+                return b.foundtracks.length >= a.foundtracks.length ? 1 : -1;
         });
     }
 

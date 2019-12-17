@@ -1,5 +1,7 @@
-import { PlaylistTrackMeta } from "./playlisttrackmeta";
+import { Track } from "./track";
 
 export class PlaylistMeta {
-    items: PlaylistTrackMeta[];
+    items: {
+        track: Track;
+    }[];
 }

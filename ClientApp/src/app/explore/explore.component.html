@@ -1,7 +1,7 @@
 
 
 <div class="input-group mb-3" style="width: 500px;">
-    <input [(ngModel)]="spotifyUserName" type="text" placeholder="Spotify Username" class="form-control" />
+    <input [(ngModel)]="spotifyUserName" (keyup.enter)="findUser()" type="text" placeholder="Spotify Username" class="form-control" />
     <div class="input-group-append">
         <button (click)="findUser()" class="btn btn-primary">
             Search
@@ -46,7 +46,7 @@
                         <tbody>
                             <tr *ngFor="let playlist of userPlaylists.items">
                                 <td>{{ playlist.name }}</td>
-                                <td>{{ playlist.tracks.length }}</td>
+                                <td>{{ playlist.foundtracks.length }}</td>
                             </tr>
                         </tbody>
                     </table>
