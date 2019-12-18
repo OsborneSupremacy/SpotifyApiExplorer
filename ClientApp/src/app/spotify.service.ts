@@ -14,6 +14,8 @@ export class SpotifyService {
 
     public username: string;
 
+    private token: Token;
+
     constructor(
         private http: HttpClient,
         @Inject('BASE_URL') private baseUrl: string) {
@@ -21,11 +23,32 @@ export class SpotifyService {
         this.stop = false;
     }
 
+    private tokenIsValid(): boolean {
+
+        if (!this.token) return false;
+
+        if (this.token.expire_time > new Date()) {
+            console.log('token is still good');
+            return true;
+        } else {
+            console.log('token needs to be refreshed');
+            return false;
+        }
+
+    }
+
     public getToken = (validConsumer: Function) => {
+
+        if (this.tokenIsValid())
+            validConsumer(this.token);
+
+        let tokenStart = new Date();
 
         this.http.get<Token>(this.baseUrl + 'token').subscribe(
             (token: Token) => {
-                validConsumer(token);
+                token.expire_time = new Date(tokenStart.getTime() + token.expires_in);
+                this.token = token;
+                validConsumer(this.token);
             },
             () => {
                 console.log('Error getting token');

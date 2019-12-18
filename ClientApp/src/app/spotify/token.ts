@@ -3,4 +3,6 @@ export class Token {
     token_type: string;
     expires_in: number;
     scope: string;
+    // not from Spotifu
+    expire_time: Date;
 }
