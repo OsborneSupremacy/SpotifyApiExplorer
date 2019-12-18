@@ -68,7 +68,7 @@ export class ExploreComponent implements OnInit {
         this.metricsEnvelope.Populated = false;
 
         this.userPlaylistsApiRequest(
-            () => this.getPlayListMetadatum(
+            () => this.getPlayListMeta(
                 this.getArtistGenres
             )
         );
@@ -93,7 +93,7 @@ export class ExploreComponent implements OnInit {
         );
     }
 
-    private getPlayListMetadatum = (next: Function) => {
+    private getPlayListMeta = (next: Function) => {
 
         for (let playlist of this.userPlaylists.items) {
             if (this.spotifyService.stop) break;
