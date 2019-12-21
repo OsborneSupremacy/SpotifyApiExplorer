@@ -31,6 +31,7 @@ namespace SpotifyApiExplorer.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 8, Location = ResponseCacheLocation.Any)]
         public Token Get()
         {
             var postClient = new HttpClient();

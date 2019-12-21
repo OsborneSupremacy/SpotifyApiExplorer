@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { retryWhen, delay, tap } from 'rxjs/operators';
 import { Token } from './spotify/';
 
@@ -21,11 +22,12 @@ export class SpotifyService {
         @Inject('BASE_URL') private baseUrl: string) {
 
         this.stop = false;
+        this.token = null;
     }
 
     private tokenIsValid(): boolean {
 
-        if (!this.token) return false;
+        if (this.token == null) return false;
 
         if (this.token.expire_time > new Date()) {
             console.log('token is still good');
@@ -37,10 +39,15 @@ export class SpotifyService {
 
     }
 
-    public getToken = (validConsumer: Function) => {
+    // maybe only get a new token if we get a specific error from the API
+    // problem is that the token is good before we make the request, but due to rate limiting
+    // will not be good on retries
+    public getToken$ = Observable.create(subscriber => {
 
-        if (this.tokenIsValid())
-            validConsumer(this.token);
+        if (this.tokenIsValid()) {
+            subscriber.next(this.token);
+            subscriber.complete();
+        }
 
         let tokenStart = new Date();
 
@@ -48,38 +55,44 @@ export class SpotifyService {
             (token: Token) => {
                 token.expire_time = new Date(tokenStart.getTime() + token.expires_in);
                 this.token = token;
-                validConsumer(this.token);
+                subscriber.next(this.token);
             },
             () => {
                 console.log('Error getting token');
             }
         );
-    }
+
+    });
 
     public apiRequest = <T>(subUrl: string, validConsumer: Function, errorConsumer: Function) => {
 
         if (this.stop) return;
 
         // need to update this to not retry on 404
-        this.getToken((token: Token) => {
-            return this.http.get<T>(`${this.apiBaseUrl}/${subUrl}`, { headers: { 'Authorization': 'Bearer ' + token.access_token } })
-                .pipe(
-                    retryWhen(errors =>
-                        errors.pipe(
-                            delay(10000),
-                            tap(errorStatus => {
-                                console.log(errorStatus.error.error.status);
-                                console.log(errorStatus);
-                                console.log('Retrying...');
-                            })
+        this.getToken$.subscribe(
+            (token: Token) => {
+
+                return this.http.get<T>(`${this.apiBaseUrl}/${subUrl}`, { headers: { 'Authorization': 'Bearer ' + token.access_token } })
+                    .pipe(
+                        retryWhen(errors =>
+                            errors.pipe(
+                                delay(10000),
+                                tap(errorStatus => {
+                                    console.log(errorStatus.error.error.status);
+                                    console.log(errorStatus);
+                                    console.log('Retrying...');
+                                })
+                            )
                         )
                     )
-                )
-                .subscribe(
-                    (result: T) => validConsumer(result),
-                    (error) => errorConsumer(error)
-                );
-        });
+                    .subscribe(
+                        (result: T) => validConsumer(result),
+                        (error) => errorConsumer(error)
+                    );
+            }
+        );
+
+
     }
 
     public HttpClientErrorHandler = (error: any) => {
