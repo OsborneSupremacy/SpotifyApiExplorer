@@ -1,18 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace SpotifyApiExplorer.Objects
 {
     public class Token
     {
-        public string access_token { get; set; }
+        [JsonPropertyName("access_token")]
+        public string AccessToken { get; set; }
 
-        public string token_type { get; set; }
+        [JsonPropertyName("token_type")]
+        public string TokenType { get; set; }
 
-        public int expires_in { get; set; }
+        [JsonPropertyName("expires_in")]
+        public int ExpiresIn { get; set; }
 
-        public string scope { get; set; }
+        [JsonPropertyName("scope")]
+        public string Scope { get; set; }
+
+        public DateTime ExpirationDate { get; set; }
     }
 }

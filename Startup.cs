@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SpotifyApiExplorer.Interface;
 using SpotifyApiExplorer.Objects;
+using Serilog;
+using SpotifyApiExplorer.Services;
 
 namespace SpotifyApiExplorer
 {
@@ -23,8 +25,12 @@ namespace SpotifyApiExplorer
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<Settings>(Configuration.GetSection("Settings"));
-            services.AddScoped<IApiRequestService, ApiRequestService>();
 
+            services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+            services.AddSingleton<IApiRequestService, ApiRequestService>();
+            services.AddSingleton<ITokenService, TokenService>();
+
+            services.AddHttpClient();
 
             services.AddControllersWithViews();
             // In production, the Angular files will be served from this directory
@@ -76,6 +82,8 @@ namespace SpotifyApiExplorer
                     spa.UseAngularCliServer(npmScript: "start");
                 }
             });
+
+            app.UseSerilogRequestLogging();
         }
     }
 }

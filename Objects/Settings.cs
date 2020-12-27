@@ -1,27 +1,30 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace SpotifyApiExplorer.Objects
 {
-    [JsonObject("Settings")]
     public class Settings
     {
-        [JsonProperty("apikeys")]
+        [JsonPropertyName("tokenUrl")]
+        [Required(AllowEmptyStrings =false)]
+        [Url]
+        public string TokenUrl { get; set; }
+
+        [JsonPropertyName("spotifyBaseUrl")]
+        [Required(AllowEmptyStrings = false)]
+        [Url]
+        public string SpotifyBaseUrl { get; set; }
+
+        [JsonPropertyName("apikeys")]
         public ApiKeys ApiKeys { get; set; }
     }
 
-    [JsonObject("apikeys")]
     public class ApiKeys
     {
-        [JsonProperty("clientid")]
+        [JsonPropertyName("clientid")]
         public string ClientId { get; set; }
 
-        [JsonProperty("clientsecret")]
+        [JsonPropertyName("clientsecret")]
         public string ClientSecret { get; set; }
     }
-
-
 }
