@@ -8,6 +8,7 @@ using SpotifyApiExplorer.Interface;
 using System.Threading.Tasks;
 using System.Text.Json;
 using SpotifyApiExplorer.Objects;
+using System.Net.Http.Headers;
 
 namespace SpotifyApiExplorer.Services
 {
@@ -15,7 +16,7 @@ namespace SpotifyApiExplorer.Services
     {
         private readonly ILogger<ITokenService> _logger;
 
-        private readonly IApiRequestService _apiRequestService;
+        private readonly IHttpFormPostService _httpFormPostService;
 
         private readonly IHttpClientFactory _httpClientFactory;
 
@@ -32,7 +33,7 @@ namespace SpotifyApiExplorer.Services
         public TokenService(
             ILogger<ITokenService> logger,
             IOptions<Settings> settings,
-            IApiRequestService apiRequestService,
+            IHttpFormPostService httpFormPostService,
             IHttpClientFactory httpClientFactory,
             IDateTimeProvider dateTimeProvider
             )
@@ -40,7 +41,7 @@ namespace SpotifyApiExplorer.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _settings = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-            _apiRequestService = apiRequestService ?? throw new ArgumentNullException(nameof(apiRequestService));
+            _httpFormPostService = httpFormPostService ?? throw new ArgumentNullException(nameof(httpFormPostService));
             _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
         }
 
@@ -70,11 +71,11 @@ namespace SpotifyApiExplorer.Services
         private async Task<Token> GetTokenAsync()
         {
             var client = _httpClientFactory.CreateClient();
-            client.DefaultRequestHeaders.Add("Authorization", $"Basic {GetUserNameAndPasswordBase64(_settings.ApiKeys.ClientId, _settings.ApiKeys.ClientSecret)}");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", $"{GetUserNameAndPasswordBase64(_settings.ApiKeys.ClientId, _settings.ApiKeys.ClientSecret)}");
 
             var startTime = _dateTimeProvider.GetCurrentDateTime();
 
-            var response = await _apiRequestService.PostFormAsync(client, _settings.TokenUrl,
+            var response = await _httpFormPostService.PostFormAsync(client, _settings.TokenUrl,
                 new List<KeyValuePair<string, string>>()
                 {
                     new KeyValuePair<string, string>("grant_type", "client_credentials")

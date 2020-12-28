@@ -17,47 +17,34 @@ namespace SpotifyApiExplorer.Controllers
 
         private readonly IApiRequestService _apiRequestService;
 
-        private readonly IHttpClientFactory _httpClientFactory;
-
         private readonly Settings _settings;
-
-        private readonly ITokenService _tokenService;
 
         public ProxyController(
             ILogger<ProxyController> logger, 
             IApiRequestService apiRequestService, 
-            IHttpClientFactory httpClientFactory,
-            IOptions<Settings> settings, 
-            ITokenService tokenService
+            IOptions<Settings> settings
         )
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _apiRequestService = apiRequestService ?? throw new ArgumentNullException(nameof(apiRequestService));
-            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _settings = settings?.Value ?? throw new ArgumentNullException(nameof(settings));
-            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         [HttpGet]
-        [Route("proxy/{**spotifyRequest}")]
+        [Route("proxy/{**request}")]
         [Produces("application/json")]
-        public async Task<IActionResult> Index([FromRoute] string spotifyRequest)
+        public async Task<IActionResult> Index([FromRoute] string request, [FromQuery] string queryString)
         {
-            var authToken = await _tokenService.GetAsync();
-
-            var client = _httpClientFactory.CreateClient();
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authToken.AccessToken}");
-
-            var url = $"{_settings.SpotifyBaseUrl}/{spotifyRequest}";
+            var url = $"{_settings.SpotifyBaseUrl}/{request}{queryString}";
 
             _logger.LogInformation("Making request to {url}", url);
 
-            var result = await _apiRequestService.GetAsync(client, url);
+            var result = await _apiRequestService.GetAsync(url);
 
             if (result.HasValue)
                 return new OkObjectResult(result);
             else
-                return new NotFoundObjectResult(spotifyRequest);
+                return new NotFoundObjectResult(request);
         }
     }
 }

@@ -27,10 +27,12 @@ namespace SpotifyApiExplorer
             services.Configure<Settings>(Configuration.GetSection("Settings"));
 
             services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+            services.AddSingleton<IHttpFormPostService, HttpFormPostService>();
             services.AddSingleton<IApiRequestService, ApiRequestService>();
             services.AddSingleton<ITokenService, TokenService>();
 
             services.AddHttpClient();
+            services.AddSingleton<IAuthorizedHttpClientFactory, AuthorizedHttpClientFactory>();
 
             services.AddControllersWithViews();
             // In production, the Angular files will be served from this directory

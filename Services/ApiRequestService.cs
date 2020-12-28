@@ -11,37 +11,21 @@ namespace SpotifyApiExplorer.Services
     {
         private readonly ILogger<IApiRequestService> _logger;
 
-        public ApiRequestService(
-            ILogger<IApiRequestService> logger
-        )
+        private readonly IAuthorizedHttpClientFactory _httpClientFactory;
+
+        public ApiRequestService(ILogger<IApiRequestService> logger, IAuthorizedHttpClientFactory httpClientFactory)
         {
-            _logger = logger;
+            _logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
+            _httpClientFactory = httpClientFactory ?? throw new System.ArgumentNullException(nameof(httpClientFactory));
         }
 
-        public async Task<string> PostFormAsync(
-            HttpClient httpClient,
-            string url, 
-            List<KeyValuePair<string, string>> nameValueList)
-        {
-            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Content = new FormUrlEncodedContent(nameValueList)
-            };
-            using var response = await httpClient.SendAsync(httpRequest);
-            response.EnsureSuccessStatusCode();
-
-            return await response.Content.ReadAsStringAsync();
-        }
-
-        public async Task<JsonElement?> GetAsync(
-            HttpClient httpClient,
-            string url
-            )
+        public async Task<JsonElement?> GetAsync(string url)
         {
             var keepTrying = true;
 
             while(keepTrying) 
             {
+                using var httpClient = await _httpClientFactory.CreateClientAsync();
                 using var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
 
                 var apiResponse = await ExecuteRequestAsync(httpClient, httpRequest);
