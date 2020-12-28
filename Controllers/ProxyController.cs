@@ -6,6 +6,7 @@ using SpotifyApiExplorer.Interface;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyApiExplorer.Objects;
+using System.Text;
 
 namespace SpotifyApiExplorer.Controllers
 {
@@ -33,13 +34,21 @@ namespace SpotifyApiExplorer.Controllers
         [HttpGet]
         [Route("proxy/{**request}")]
         [Produces("application/json")]
-        public async Task<IActionResult> Index([FromRoute] string request, [FromQuery] string queryString)
+        public async Task<IActionResult> Index(
+            [FromRoute] string request,
+            [FromQuery] string q,
+            [FromQuery] string type
+        )
         {
-            var url = $"{_settings.SpotifyBaseUrl}/{request}{queryString}";
+            var url = new StringBuilder($"{_settings.SpotifyBaseUrl}/{request}");
 
-            _logger.LogInformation("Making request to {url}", url);
+            if(!string.IsNullOrEmpty(q)) {
+                url.Append($"?q={q}&type={type}");
+            }
 
-            var result = await _apiRequestService.GetAsync(url);
+            _logger.LogInformation("Making request to {url}", url.ToString());
+
+            var result = await _apiRequestService.GetAsync(url.ToString());
 
             if (result.HasValue)
                 return new OkObjectResult(result);

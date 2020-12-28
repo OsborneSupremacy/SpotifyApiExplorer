@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.Threading;
 
 namespace SpotifyApiExplorer.Services
 {
@@ -31,7 +32,10 @@ namespace SpotifyApiExplorer.Services
                 var apiResponse = await ExecuteRequestAsync(httpClient, httpRequest);
 
                 keepTrying = (!apiResponse.Success && apiResponse.Retry);
-                if (!apiResponse.Success) continue;
+                if (!apiResponse.Success) {
+                    Thread.Sleep((int)apiResponse.WaitMs);
+                    continue;
+                };
 
                 // success -- read response body
                 using var response = apiResponse.HttpResponseMessage;
